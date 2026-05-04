@@ -3,285 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captura de Conteo - CIC</title>
+    <title>Accesos a corporativo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAYOShmp1M2Mo-Vc1aN8F-VU0Bw4BXOdLA",
-            authDomain: "cic-10-1.firebaseapp.com",
-            projectId: "cic-10-1",
-            storageBucket: "cic-10-1.firebasestorage.app",
-            messagingSenderId: "697412113110",
-            appId: "1:697412113110:web:51f5708ed523992d9daf77"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        const casetas = ["Simón Bolivar", "Carranza", "Edison", "Impulso", "Michelena", "Recepción", "Video Portero U.N."];
-        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        
-        let selectedCaseta = localStorage.getItem('cic_capture_caseta') || "";
-        let configCajones = {};
-        let todayData = {};
-
-        const getDayKey = (date) => `${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${date.getFullYear()}`;
-
-        async function init() {
-            onSnapshot(doc(db, "CIC", "ConteoIngresos"), (snap) => {
-                if (snap.exists()) configCajones = snap.data().configCajones || {};
-                renderStats();
-            });
-
-            const now = new Date();
-            const yearStr = now.getFullYear().toString();
-            const monthStr = monthNames[now.getMonth()];
-            const dayKey = getDayKey(now);
-
-            onSnapshot(doc(db, "CIC/ConteoIngresos", yearStr, monthStr), (snap) => {
-                const fullData = snap.exists() ? snap.data() : {};
-                todayData = fullData[dayKey] || {};
-                renderStats();
-            });
-        }
-
-        window.setCaseta = (c) => {
-            selectedCaseta = c;
-            localStorage.setItem('cic_capture_caseta', c);
-            renderStats();
-        };
-
-        window.changeCaseta = () => {
-            selectedCaseta = "";
-            localStorage.removeItem('cic_capture_caseta');
-            renderStats();
-        };
-
-        async function registrar(path, value = 1) {
-            if (!selectedCaseta) return;
-            const now = new Date();
-            const yearStr = now.getFullYear().toString();
-            const monthStr = monthNames[now.getMonth()];
-            const dayKey = getDayKey(now);
-
-            const docRef = doc(db, "CIC/ConteoIngresos", yearStr, monthStr);
-            
-            // Lógica para manejar rutas anidadas (como externos.visita o lotes.principal)
-            const parts = path.split('.');
-            let updateObj = {};
-            
-            if (parts.length === 2) {
-                updateObj = {
-                    [dayKey]: {
-                        [selectedCaseta]: {
-                            [parts[0]]: {
-                                [parts[1]]: increment(value)
-                            }
-                        }
-                    }
-                };
-            } else {
-                updateObj = {
-                    [dayKey]: {
-                        [selectedCaseta]: {
-                            [path]: increment(value)
-                        }
-                    }
-                };
-            }
-
-            try {
-                await setDoc(docRef, updateObj, { merge: true });
-            } catch (e) { console.error("Error al registrar:", e); }
-        }
-
-        window.registrarPersona = (tipo) => {
-            if (tipo === 'interno') registrar('personas');
-            else registrar(`externos.${tipo}`);
-        };
-
-        window.registrarVehiculo = (lote, capActual, capMax) => {
-            if (capMax > 0 && capActual >= capMax) {
-                // Notificación visual de saturación
-                const btn = document.getElementById(`btn-v-${lote}`);
-                btn.classList.add('animate-shake');
-                setTimeout(() => btn.classList.remove('animate-shake'), 500);
-            }
-            registrar(`lotes.${lote}`);
-            // Sumar al total general de vehículos de la caseta para el dashboard
-            registrar('vehiculos');
-        };
-
-        function renderStats() {
-            const view = document.getElementById('capture-view');
-            const selector = document.getElementById('caseta-selector');
-            
-            if (!selectedCaseta) {
-                view.classList.add('hidden');
-                selector.classList.remove('hidden');
-                return;
-            }
-
-            selector.classList.add('hidden');
-            view.classList.remove('hidden');
-
-            const data = todayData[selectedCaseta] || {};
-            const ext = data.externos || {};
-            const lotesData = data.lotes || {};
-            const lotsConfig = configCajones[selectedCaseta] || {};
-
-            // Totales para encabezado
-            const totalP = (data.personas || 0) + (ext.prestador || 0) + (ext.visita || 0) + (ext.consultor || 0);
-            const totalV = data.vehiculos || 0;
-
-            document.getElementById('display-caseta').innerText = selectedCaseta;
-            document.getElementById('head-total-p').innerText = totalP;
-            document.getElementById('head-total-v').innerText = totalV;
-
-            // Render botones Personas con totales
-            document.getElementById('btn-p-interno').innerHTML = `<span>Interno</span><span class="opacity-50">(${data.personas || 0})</span>`;
-            document.getElementById('btn-p-prestador').innerHTML = `<span>Prestador de Servicio</span><span class="opacity-50">(${ext.prestador || 0})</span>`;
-            document.getElementById('btn-p-visita').innerHTML = `<span>Visita</span><span class="opacity-50">(${ext.visita || 0})</span>`;
-            document.getElementById('btn-p-consultor').innerHTML = `<span>Consultor</span><span class="opacity-50">(${ext.consultor || 0})</span>`;
-
-            // Render botones Vehículos dinámicos
-            const vContainer = document.getElementById('vehiculos-grid');
-            const lotKeys = Object.keys(lotsConfig);
-            
-            if (lotKeys.length === 0) {
-                vContainer.innerHTML = `<div class="col-span-full py-8 text-center opacity-20 italic text-[10px] font-black uppercase tracking-widest">Sin lotes configurados</div>`;
-            } else {
-                vContainer.innerHTML = lotKeys.map(lote => {
-                    const ocupados = lotesData[lote] || 0;
-                    const capacidad = lotsConfig[lote] || 0;
-                    const disponibles = Math.max(0, capacidad - ocupados);
-                    const isFull = capacidad > 0 && disponibles === 0;
-
-                    return `
-                        <button id="btn-v-${lote}" onclick="registrarVehiculo('${lote}', ${ocupados}, ${capacidad})" 
-                            class="capture-btn flex flex-col items-center justify-center p-4 rounded-[2rem] border-2 transition-all active:scale-95 ${isFull ? 'bg-rose-600 border-rose-400 text-white shadow-rose-200' : 'bg-white border-slate-100 text-slate-700 shadow-sm'}">
-                            <i class="fa-solid fa-car-side mb-2 text-xl ${isFull ? 'text-white' : 'text-emerald-500'}"></i>
-                            <span class="text-[10px] font-black uppercase tracking-tighter leading-tight mb-1">${lote}</span>
-                            <div class="flex flex-col leading-none">
-                                <span class="text-[14px] font-black">${ocupados} / ${capacidad}</span>
-                                <span class="text-[7px] font-bold uppercase ${isFull ? 'text-rose-200' : 'text-slate-400'} mt-1">Libres: ${disponibles}</span>
-                            </div>
-                        </button>
-                    `;
-                }).join('');
-            }
-        }
-
-        window.onload = init;
-    </script>
     <style>
-        .capture-btn { transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        .header-glass {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.5);
+        .glass-light {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .btn-card {
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: visible !important;
+        }
+        .btn-card:active {
+            transform: scale(0.95);
+        }
+        .bg-light-mesh {
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(210, 100%, 95%, 1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(190, 100%, 95%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 100%, hsla(220, 100%, 92%, 1) 0, transparent 50%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px); }
-            75% { transform: translateX(4px); }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+            80% { transform: translateY(-40px) scale(1); opacity: 1; }
+            100% { transform: translateY(-60px) scale(0.8); opacity: 0; }
         }
-        .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
+        .bubble-plus {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2563eb;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 50;
+            animation: floatUp 0.6s ease-out forwards;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Animación para el banner de alerta */
+        @keyframes pulse-red {
+            0%, 100% { background-color: #ef4444; }
+            50% { background-color: #b91c1c; }
+        }
+        .animate-urgent {
+            animation: pulse-red 2s infinite;
+        }
     </style>
 </head>
-<body class="bg-slate-950 font-sans text-slate-800 h-screen flex flex-col overflow-hidden">
+<body class="bg-light-mesh text-slate-800 font-sans min-h-screen flex flex-col items-center">
+    
+    <!-- Banner de Urgencia (Cargado por defecto como oculto) -->
+    <div id="offlineBanner" class="hidden w-full animate-urgent text-white py-3 px-4 text-center font-black text-xs uppercase tracking-[0.2em] shadow-lg sticky top-0 z-[100]">
+        ⚠️ Sin conexión a internet - Favor de conectarse para sincronizar datos
+    </div>
 
-    <!-- Selector de Caseta -->
-    <div id="caseta-selector" class="flex-1 flex flex-col p-6 items-center justify-center text-white overflow-y-auto">
-        <div class="w-full max-w-sm text-center">
-            <div class="w-20 h-20 bg-indigo-600 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-2xl rotate-3">
-                <i class="fa-solid fa-building-shield text-3xl"></i>
+    <div class="w-full max-w-2xl mt-4 sm:mt-10 text-center px-4">
+        <!-- Encabezado con Protagonismo de Caseta -->
+        <div class="glass-light p-6 rounded-[2.5rem] card-shadow mb-6 flex flex-col items-center justify-center transition-all duration-500">
+            <p id="fechaHoy" class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mb-3 opacity-80"></p>
+            
+            <!-- Vista Protagonista -->
+            <div id="vistaProtagonista" class="hidden animate-in fade-in zoom-in-95 duration-500 mb-2">
+                <p class="text-[10px] font-black text-blue-600 uppercase tracking-[0.25em] mb-1">Punto de Control Activo</p>
+                <h1 id="nombreCasetaProtagonista" class="text-4xl sm:text-5xl font-black text-slate-900 tracking-tighter leading-tight">---</h1>
             </div>
-            <h1 class="text-xl font-black uppercase tracking-[0.2em] mb-2">Puesto de Control</h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10">Seleccione su estación</p>
-            <div class="grid grid-cols-1 gap-3">
-                <script>
-                    document.write(["Simón Bolivar", "Carranza", "Edison", "Impulso", "Michelena", "Recepción", "Video Portero U.N."].map(c => `
-                        <button onclick="setCaseta('${c}')" class="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
-                            ${c}
-                        </button>
-                    `).join(''));
-                </script>
+
+            <!-- Vista de Selección -->
+            <div id="vistaSelector" class="w-full max-w-xs mt-2">
+                <div id="tituloGeneral" class="mb-4">
+                    <h1 class="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 tracking-tight">
+                        Accesos a corporativo
+                    </h1>
+                </div>
+                
+                <div class="relative group">
+                    <select id="casetaSelect" class="w-full p-3 rounded-2xl bg-white text-slate-800 border border-slate-200 shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all text-sm appearance-none cursor-pointer pr-10 font-bold text-center">
+                        <option value="">Cargando puntos...</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400 group-hover:text-blue-500 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                
+                <button id="btnCambiarCaseta" class="hidden mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-blue-600 transition-colors">
+                    Cambiar punto de control
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel de Botones -->
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="registrar('Interno')" id="btn-Interno" disabled class="btn-card h-40 sm:h-52 rounded-[2rem] card-shadow bg-white flex flex-col items-center justify-center text-center p-4 disabled:opacity-40">
+                <div id="count-interno" class="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-sm">0</div>
+                <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-inner">🆔</div>
+                <span class="text-xl font-black text-blue-900">Interno</span>
+                <span class="text-[9px] text-blue-600 uppercase font-extrabold mt-1 tracking-widest">Colaborador</span>
+            </button>
+
+            <button onclick="registrar('Externo')" id="btn-Externo" disabled class="btn-card h-40 sm:h-52 rounded-[2rem] card-shadow bg-white flex flex-col items-center justify-center text-center p-4 disabled:opacity-40">
+                <div id="count-externo" class="absolute top-4 right-4 bg-indigo-600 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-sm">0</div>
+                <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-inner">🏢</div>
+                <span class="text-xl font-black text-indigo-900">Externo</span>
+                <span class="text-[9px] text-indigo-600 uppercase font-extrabold mt-1 tracking-widest">Socio / Regional</span>
+            </button>
+
+            <button onclick="registrar('Visita')" id="btn-Visita" disabled class="btn-card h-40 sm:h-52 rounded-[2rem] card-shadow bg-white flex flex-col items-center justify-center text-center p-4 disabled:opacity-40">
+                <div id="count-visita" class="absolute top-4 right-4 bg-emerald-600 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-sm">0</div>
+                <div class="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-inner">👋</div>
+                <span class="text-xl font-black text-emerald-900">Visita</span>
+                <span class="text-[9px] text-emerald-600 uppercase font-extrabold mt-1 tracking-widest">Invitado</span>
+            </button>
+
+            <button onclick="registrar('Prestador')" id="btn-Prestador" disabled class="btn-card h-40 sm:h-52 rounded-[2rem] card-shadow bg-white flex flex-col items-center justify-center text-center p-4 disabled:opacity-40">
+                <div id="count-prestador" class="absolute top-4 right-4 bg-orange-600 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-sm">0</div>
+                <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-inner">🛠️</div>
+                <span class="text-xl font-black text-orange-900">Prestador</span>
+                <span class="text-[9px] text-orange-600 uppercase font-extrabold mt-1 tracking-widest">Servicios</span>
+            </button>
+        </div>
+
+        <div class="mt-10 flex flex-col items-center">
+            <div id="statusMensaje" class="px-6 py-2 rounded-full bg-white/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] border border-slate-200/50 card-shadow">
+                Iniciando...
             </div>
         </div>
     </div>
 
-    <!-- Interfaz de Captura Activa -->
-    <div id="capture-view" class="hidden flex-1 flex flex-col bg-slate-50 rounded-t-[3.5rem] overflow-hidden relative shadow-2xl">
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc, increment, onSnapshot, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCWnR9qrcgpHidCXo8kjAnIAM-3Bt0pZQE",
+            authDomain: "cic-cco-os.firebaseapp.com",
+            databaseURL: "https://cic-cco-os-default-rtdb.firebaseio.com",
+            projectId: "cic-cco-os",
+            storageBucket: "cic-cco-os.firebasestorage.app",
+            messagingSenderId: "707149465913",
+            appId: "1:707149465913:web:d84ee1394b1e75473e00e8",
+            measurementId: "G-2HCMXLMQXB"
+        };
         
-        <!-- Encabezado con Totales -->
-        <header class="header-glass p-6 pt-10 flex flex-col gap-6 shrink-0 text-white">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10"><i class="fa-solid fa-location-dot text-indigo-400"></i></div>
-                    <h2 id="display-caseta" class="text-lg font-black uppercase tracking-tighter">---</h2>
-                </div>
-                <button onclick="changeCaseta()" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white/70 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/5">Cambiar</button>
-            </div>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Activar persistencia IndexedDB para funcionar offline
+        enableIndexedDbPersistence(db).catch(console.warn);
+
+        const dom = {
+            casetaSelect: document.getElementById('casetaSelect'),
+            status: document.getElementById('statusMensaje'),
+            fecha: document.getElementById('fechaHoy'),
+            offlineBanner: document.getElementById('offlineBanner'),
+            vistaProtagonista: document.getElementById('vistaProtagonista'),
+            nombreProtagonista: document.getElementById('nombreCasetaProtagonista'),
+            vistaSelector: document.getElementById('vistaSelector'),
+            tituloGeneral: document.getElementById('tituloGeneral'),
+            btnCambiar: document.getElementById('btnCambiarCaseta')
+        };
+
+        const TIPOS = ['Interno', 'Externo', 'Visita', 'Prestador'];
+        const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        
+        let user = null;
+        let unsubscribeLive = null;
+        let buffer = { Interno: 0, Externo: 0, Visita: 0, Prestador: 0 };
+        let syncTimeout = null;
+
+        // Monitoreo de conexión de red
+        const checkConnectivity = () => {
+            if (navigator.onLine) {
+                dom.offlineBanner.classList.add('hidden');
+            } else {
+                dom.offlineBanner.classList.remove('hidden');
+            }
+        };
+        window.addEventListener('online', checkConnectivity);
+        window.addEventListener('offline', checkConnectivity);
+        checkConnectivity();
+
+        const actualizarFecha = () => {
+            const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dom.fecha.innerText = new Date().toLocaleDateString('es-MX', opciones);
+        };
+        actualizarFecha();
+
+        onAuthStateChanged(auth, (u) => {
+            if (u) {
+                user = u;
+                cargarCasetas();
+            } else {
+                signInAnonymously(auth).catch(console.error);
+            }
+        });
+
+        const cargarCasetas = async () => {
+            try {
+                const snapshot = await getDoc(doc(db, "CIC", "Casetas"));
+                let casetas = snapshot.exists() ? Object.keys(snapshot.data()) : [];
+
+                dom.casetaSelect.innerHTML = '<option value="">-- Selecciona Punto --</option>';
+                casetas.sort().forEach(caseta => {
+                    const opt = document.createElement('option');
+                    opt.value = caseta;
+                    opt.textContent = caseta;
+                    dom.casetaSelect.appendChild(opt);
+                });
+
+                const guardada = localStorage.getItem('caseta_seleccionada_cic');
+                if (guardada && casetas.includes(guardada)) {
+                    dom.casetaSelect.value = guardada;
+                    habilitarSistema(guardada);
+                } else {
+                    dom.status.innerText = 'Elige un punto de control';
+                }
+            } catch (err) { 
+                console.error(err); 
+                dom.status.innerText = 'Error de conexión / Offline';
+            }
+        };
+
+        const habilitarSistema = (caseta) => {
+            TIPOS.forEach(t => document.getElementById(`btn-${t}`).disabled = false);
             
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-black/30 p-3 rounded-2xl border border-white/5 flex items-center justify-between">
-                    <div class="flex flex-col"><span class="text-[7px] font-black text-indigo-400 uppercase tracking-widest">Personas</span><span id="head-total-p" class="text-2xl font-black leading-none">0</span></div>
-                    <i class="fa-solid fa-users text-white/10 text-2xl"></i>
-                </div>
-                <div class="bg-black/30 p-3 rounded-2xl border border-white/5 flex items-center justify-between">
-                    <div class="flex flex-col"><span class="text-[7px] font-black text-emerald-400 uppercase tracking-widest">Vehículos</span><span id="head-total-v" class="text-2xl font-black leading-none">0</span></div>
-                    <i class="fa-solid fa-car text-white/10 text-2xl"></i>
-                </div>
-            </div>
-        </header>
+            dom.nombreProtagonista.innerText = caseta;
+            dom.vistaProtagonista.classList.remove('hidden');
+            dom.tituloGeneral.classList.add('hidden');
+            dom.casetaSelect.parentElement.classList.add('hidden');
+            dom.btnCambiar.classList.remove('hidden');
 
-        <main class="flex-1 overflow-y-auto p-6 space-y-8 custom-scroll pb-12">
+            dom.status.innerHTML = `Listo para capturar`;
+            escucharTotales(caseta);
+        };
+
+        const deshabilitarSistema = () => {
+            TIPOS.forEach(t => document.getElementById(`btn-${t}`).disabled = true);
+            dom.vistaProtagonista.classList.add('hidden');
+            dom.tituloGeneral.classList.remove('hidden');
+            dom.casetaSelect.parentElement.classList.remove('hidden');
+            dom.btnCambiar.classList.add('hidden');
+            dom.status.innerText = 'Selecciona punto de control';
+            if (unsubscribeLive) unsubscribeLive();
+        };
+
+        const escucharTotales = (caseta) => {
+            if (unsubscribeLive) unsubscribeLive();
+            const ahora = new Date();
+            const anio = ahora.getFullYear().toString();
+            const mesNombre = meses[ahora.getMonth()];
+            const dateKey = ahora.toLocaleDateString('en-CA', {timeZone: 'America/Monterrey'}); 
+
+            unsubscribeLive = onSnapshot(doc(db, "CIC", "Ingreso-Colaboradores", anio, mesNombre), (snap) => {
+                if (snap.exists() && snap.data()[dateKey] && snap.data()[dateKey][caseta]) {
+                    const data = snap.data()[dateKey][caseta];
+                    TIPOS.forEach(t => {
+                        const label = document.getElementById(`count-${t.toLowerCase()}`);
+                        if (label) label.innerText = data[t.toLowerCase()] || 0;
+                    });
+                } else {
+                    limpiarContadores();
+                }
+            });
+        };
+
+        const limpiarContadores = () => {
+            TIPOS.forEach(t => {
+                const label = document.getElementById(`count-${t.toLowerCase()}`);
+                if (label) label.innerText = "0";
+            });
+        };
+
+        dom.casetaSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val) {
+                localStorage.setItem('caseta_seleccionada_cic', val);
+                habilitarSistema(val);
+            } else {
+                localStorage.removeItem('caseta_seleccionada_cic');
+                deshabilitarSistema();
+            }
+        });
+
+        dom.btnCambiar.addEventListener('click', () => {
+            dom.tituloGeneral.classList.remove('hidden');
+            dom.casetaSelect.parentElement.classList.remove('hidden');
+            dom.btnCambiar.classList.add('hidden');
+            dom.casetaSelect.focus();
+        });
+
+        window.registrar = (tipo) => {
+            const caseta = dom.casetaSelect.value;
+            if (!caseta || !user) return;
+
+            buffer[tipo]++;
+            const btn = document.getElementById(`btn-${tipo}`);
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble-plus';
+            bubble.innerText = `+${buffer[tipo]}`;
+            btn.appendChild(bubble);
+            setTimeout(() => bubble.remove(), 600);
+
+            if (syncTimeout) clearTimeout(syncTimeout);
+            dom.status.innerHTML = `<span class="text-blue-600 font-bold animate-pulse tracking-widest uppercase text-[9px]">${navigator.onLine ? 'Sincronizando...' : 'Guardando localmente...'}</span>`;
             
-            <!-- SECCIÓN 1: PERSONAS -->
-            <section>
-                <div class="flex items-center gap-3 mb-4 px-2">
-                    <div class="w-1.5 h-4 bg-indigo-600 rounded-full"></div>
-                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Ingreso de Personas</h3>
-                </div>
-                <div class="grid grid-cols-1 gap-3">
-                    <button id="btn-p-interno" onclick="registrarPersona('interno')" class="capture-btn w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-indigo-100 flex items-center justify-center gap-3">
-                        <span>Interno</span> <span class="opacity-50">(0)</span>
-                    </button>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <button id="btn-p-prestador" onclick="registrarPersona('prestador')" class="capture-btn py-4 bg-white border-2 border-indigo-100 text-indigo-600 rounded-2xl font-black text-[9px] uppercase tracking-widest flex flex-col items-center gap-1">
-                            <span>Prestador</span> <span class="opacity-40 text-[8px]">(0)</span>
-                        </button>
-                        <button id="btn-p-visita" onclick="registrarPersona('visita')" class="capture-btn py-4 bg-white border-2 border-indigo-100 text-indigo-600 rounded-2xl font-black text-[9px] uppercase tracking-widest flex flex-col items-center gap-1">
-                            <span>Visita</span> <span class="opacity-40 text-[8px]">(0)</span>
-                        </button>
-                        <button id="btn-p-consultor" onclick="registrarPersona('consultor')" class="capture-btn py-4 bg-white border-2 border-indigo-100 text-indigo-600 rounded-2xl font-black text-[9px] uppercase tracking-widest flex flex-col items-center gap-1">
-                            <span>Consultor</span> <span class="opacity-40 text-[8px]">(0)</span>
-                        </button>
-                    </div>
-                </div>
-            </section>
+            syncTimeout = setTimeout(() => sincronizarConDB(caseta), 600);
+        };
 
-            <!-- SECCIÓN 2: VEHÍCULOS -->
-            <section>
-                <div class="flex items-center gap-3 mb-4 px-2">
-                    <div class="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
-                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Acceso de Vehículos</h3>
-                </div>
-                <div id="vehiculos-grid" class="grid grid-cols-2 gap-4">
-                    <!-- Los lotes se inyectan dinámicamente -->
-                </div>
-            </section>
+        const sincronizarConDB = async (caseta) => {
+            const dataToSync = { ...buffer };
+            buffer = { Interno: 0, Externo: 0, Visita: 0, Prestador: 0 };
+            const ahora = new Date();
+            const anio = ahora.getFullYear().toString();
+            const mesNombre = meses[ahora.getMonth()];
+            const dateKey = ahora.toLocaleDateString('en-CA', {timeZone: 'America/Monterrey'}); 
 
-        </main>
-    </div>
+            try {
+                const docRef = doc(db, "CIC", "Ingreso-Colaboradores", anio, mesNombre);
+                let totalBuffered = 0;
+                const updateObj = { [dateKey]: { [caseta]: {} } };
 
+                Object.keys(dataToSync).forEach(tipo => {
+                    if (dataToSync[tipo] > 0) {
+                        const val = dataToSync[tipo];
+                        updateObj[dateKey][caseta][tipo.toLowerCase()] = increment(val);
+                        totalBuffered += val;
+                    }
+                });
+
+                if (totalBuffered === 0) return;
+                updateObj[dateKey][caseta].total = increment(totalBuffered);
+                updateObj[dateKey].totalDia = increment(totalBuffered);
+
+                await setDoc(docRef, updateObj, { merge: true });
+                dom.status.innerHTML = `<span class="text-emerald-600 font-black tracking-widest uppercase">✓ OK</span>`;
+                setTimeout(() => {
+                    if (dom.casetaSelect.value) dom.status.innerHTML = `Listo para capturar`;
+                }, 1000);
+            } catch (error) {
+                console.error(error);
+                dom.status.innerHTML = `<span class="text-red-500 font-bold uppercase text-[9px]">Reintentando automáticamente...</span>`;
+            }
+        };
+    </script>
 </body>
 </html>
