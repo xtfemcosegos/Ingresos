@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Accesos a corporativo - CDI Móvil</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#f0f4f8">
+  <style>
+    :root {
+      /* Modo claro por defecto */
+      --bg: #f0f4f8;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.09);
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --accent-blue: #2563eb;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-purple: #7c3aed;
+      --accent-cyan: #0891b2;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    html, body {
+      height: 100%;
+      height: 100dvh;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      padding: env(safe-area-inset-top, 8px) 12px env(safe-area-inset-bottom, 10px) 12px;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0 10px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .header-title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      background: rgba(37, 99, 235, 0.12);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: var(--accent-blue);
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .connection-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #059669;
+      box-shadow: 0 0 6px #059669;
+    }
+    .status-dot.syncing {
+      background: #d97706;
+      box-shadow: 0 0 6px #d97706;
+      animation: pulse 0.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+    }
+
+    /* ── CONTROLES SUPERIORES ── */
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 12px 0 14px;
+    }
+    .caseta-selector-box {
+      flex: 1;
+    }
+    /* Caseta destacada */
+    .caseta-select {
+      width: 100%;
+      padding: 11px 40px 11px 14px;
+      background: var(--card-bg);
+      border: 2px solid var(--accent-blue);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 700;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12), var(--shadow-sm);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .caseta-select:focus {
+      border-color: #1d4ed8;
+      box-shadow: 0 0 0 4px rgba(37,99,235,0.2), var(--shadow-sm);
+    }
+
+    .mode-toggle {
+      display: inline-flex;
+      background: #e2e8f0;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .mode-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 7px 11px;
+      border-radius: 7px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.15s ease;
+    }
+    .mode-btn.active {
+      background: var(--accent-blue);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+    }
+    .mode-btn.mode-sub.active {
+      background: #ef4444;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+    }
+
+    /* ── GRILLA DE BOTONES ── */
+    .grid-wrapper {
+      flex: 1;                   /* ocupa el espacio entre controles y footer */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .counter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      /* NO flex:1 para que no se estire verticalmente */
+      padding: 0 20px;           /* margen amplio lateral */
+      margin: 10px 0;
+      align-content: center;
+      justify-content: center;
+    }
+    .counter-btn {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      padding: 0;
+      width: 100%;
+      aspect-ratio: 1 / 1;      /* ← cuadrado exacto */
+      min-width: 200px;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      color: var(--text);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      touch-action: manipulation;
+      transition: transform 0.08s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    /* Imagen de fondo desvanecida usando pseudo-elemento */
+    .counter-btn::before {
+      content: attr(data-bg-icon);
+      position: absolute;
+      bottom: -8px;
+      right: -4px;
+      font-size: 4.5rem;
+      line-height: 1;
+      opacity: 0.07;
+      pointer-events: none;
+      filter: grayscale(0.2);
+      transform: rotate(-10deg);
+      transition: opacity 0.15s ease;
+    }
+    .counter-btn:active::before {
+      opacity: 0.13;
+    }
+    .counter-btn:active {
+      transform: scale(0.96);
+      box-shadow: var(--shadow-md);
+    }
+    .counter-btn.btn-internos {
+      border-top: 4px solid var(--accent-blue);
+    }
+    .counter-btn.btn-internos:active {
+      background: rgba(37, 99, 235, 0.06);
+    }
+    .counter-btn.btn-externos {
+      border-top: 4px solid var(--accent-amber);
+    }
+    .counter-btn.btn-externos:active {
+      background: rgba(217, 119, 6, 0.06);
+    }
+    .counter-btn.btn-prestadores {
+      border-top: 4px solid var(--accent-purple);
+    }
+    .counter-btn.btn-prestadores:active {
+      background: rgba(124, 58, 237, 0.06);
+    }
+    .counter-btn.btn-visitas {
+      border-top: 4px solid var(--accent-emerald);
+    }
+    .counter-btn.btn-visitas:active {
+      background: rgba(5, 150, 105, 0.06);
+    }
+
+    .btn-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+    }
+    .btn-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+    }
+    .btn-count {
+      font-size: 1.7rem;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      margin-top: 2px;
+      position: relative;
+      z-index: 1;
+    }
+    .counter-btn.btn-internos .btn-count  { color: var(--accent-blue); }
+    .counter-btn.btn-externos .btn-count  { color: var(--accent-amber); }
+    .counter-btn.btn-prestadores .btn-count { color: var(--accent-purple); }
+    .counter-btn.btn-visitas .btn-count   { color: var(--accent-emerald); }
+
+    .btn-pending-badge {
+      position: absolute;
+      top: 7px;
+      right: 9px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 999px;
+      display: none;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+      animation: popIn 0.15s ease;
+      z-index: 2;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.4); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── FOOTER ── */
+    .footer-summary {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      box-shadow: var(--shadow-sm);
+    }
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .summary-title {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .summary-value {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── TOAST ── */
+    .toast-sync {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 99;
+    }
+    .toast-sync.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-title">
+      <span>🔢 CDI Móvil</span>
+      <span class="header-badge">En Vivo</span>
+    </div>
+    <div class="connection-status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Conectando...</span>
+    </div>
+  </header>
+
+  <div class="top-controls">
+    <div class="caseta-selector-box">
+      <select id="casetaSelect" class="caseta-select">
+        <option value="Centro de Control">🏢 Centro de Control</option>
+        <option value="Encargado">👔 Encargado</option>
+        <option value="Recepción Edison">📋 Recepción Edison</option>
+        <option value="Edison">🛡️ Edison</option>
+        <option value="Impulso">⚡ Impulso</option>
+        <option value="Michelena">📍 Michelena</option>
+        <option value="Simón Bolívar">🏛️ Simón Bolívar</option>
+        <option value="Carranza">🚪 Carranza</option>
+        <option value="Universidad">🏫 Universidad</option>
+        <option value="Rondinero">🚶 Rondinero</option>
+        <option value="Anexo Edison">🏭 Anexo Edison</option>
+      </select>
+    </div>
+
+    <div class="mode-toggle">
+      <button type="button" class="mode-btn active" id="btnModeAdd" title="Sumar +1">+1</button>
+      <button type="button" class="mode-btn mode-sub" id="btnModeSub" title="Restar -1 (Corregir)">−1</button>
+    </div>
+  </div>
+
+  <div class="grid-wrapper">
+    <div class="counter-grid">
+      <!-- 1. INTERNOS -->
+      <button type="button" class="counter-btn btn-internos" data-cat="internos" data-bg-icon="🏢">
+        <span class="btn-icon">🏢</span>
+        <span class="btn-label">Internos</span>
+        <span class="btn-count" id="count-internos">0</span>
+        <span class="btn-pending-badge" id="badge-internos">+1</span>
+      </button>
+
+      <!-- 2. EXTERNOS -->
+      <button type="button" class="counter-btn btn-externos" data-cat="externos" data-bg-icon="🚗">
+        <span class="btn-icon">🚗</span>
+        <span class="btn-label">Externos</span>
+        <span class="btn-count" id="count-externos">0</span>
+        <span class="btn-pending-badge" id="badge-externos">+1</span>
+      </button>
+
+      <!-- 3. PRESTADORES -->
+      <button type="button" class="counter-btn btn-prestadores" data-cat="prestadores" data-bg-icon="🛠️">
+        <span class="btn-icon">🛠️</span>
+        <span class="btn-label">Prestadores</span>
+        <span class="btn-count" id="count-prestadores">0</span>
+        <span class="btn-pending-badge" id="badge-prestadores">+1</span>
+      </button>
+
+      <!-- 4. VISITAS -->
+      <button type="button" class="counter-btn btn-visitas" data-cat="visitas" data-bg-icon="👤">
+        <span class="btn-icon">👤</span>
+        <span class="btn-label">Visitas</span>
+        <span class="btn-count" id="count-visitas">0</span>
+        <span class="btn-pending-badge" id="badge-visitas">+1</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="footer-summary">
+    <div class="summary-item">
+      <span class="summary-title">Total Caseta</span>
+      <span class="summary-value" id="totalCaseta">0</span>
+    </div>
+    <div class="summary-item" style="text-align: right;">
+      <span class="summary-title">Total General</span>
+      <span class="summary-value" id="totalGeneral">0</span>
+    </div>
+  </div>
+
+  <div class="toast-sync" id="toastSync">
+    <span>✓ Sincronizado</span>
+  </div>
+
+  <script>
+    (function() {
+      // Base URL dinámico: apunta al backend túnel público cuando corre en Firebase Hosting
+      const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? ''
+        : 'https://be-regas.segos911.workers.dev';
+
+      const API_HEADERS = {
+        'Content-Type': 'application/json',
+        'Bypass-Tunnel-Reminder': 'true',
+        'bypass-tunnel-reminder': 'true'
+      };
+
+      const getTodayIso = () => {
+        const d = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      };
+
+      let currentDate = getTodayIso();
+      let currentCaseta = localStorage.getItem('regas_cdi_last_caseta') || localStorage.getItem('caseta_seleccionada_cic') || 'Centro de Control';
+      let currentMode = 1; // 1 = sumar, -1 = restar/corregir
+
+      const counts = {
+        internos: 0,
+        externos: 0,
+        prestadores: 0,
+        visitas: 0
+      };
+
+      const pendingDeltas = {
+        internos: 0,
+        externos: 0,
+        prestadores: 0,
+        visitas: 0
+      };
+
+      const debounceTimers = {};
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      const toastSync = document.getElementById('toastSync');
+      const casetaSelect = document.getElementById('casetaSelect');
+      const btnModeAdd = document.getElementById('btnModeAdd');
+      const btnModeSub = document.getElementById('btnModeSub');
+
+      if (btnModeAdd && btnModeSub) {
+        btnModeAdd.addEventListener('click', () => {
+          currentMode = 1;
+          btnModeAdd.classList.add('active');
+          btnModeSub.classList.remove('active');
+        });
+        btnModeSub.addEventListener('click', () => {
+          currentMode = -1;
+          btnModeSub.classList.add('active');
+          btnModeAdd.classList.remove('active');
+        });
+      }
+
+      if (currentCaseta) {
+        casetaSelect.value = currentCaseta;
+      }
+
+      casetaSelect.addEventListener('change', (e) => {
+        currentCaseta = e.target.value;
+        localStorage.setItem('regas_cdi_last_caseta', currentCaseta);
+        localStorage.setItem('caseta_seleccionada_cic', currentCaseta);
+        fetchCdiData();
+      });
+
+      // Haptic feedback
+      const triggerHaptic = (ms = 25) => {
+        if (navigator.vibrate) {
+          try { navigator.vibrate(ms); } catch (e) {}
+        }
+      };
+
+      const showToast = (msg = '✓ Sincronizado') => {
+        toastSync.textContent = msg;
+        toastSync.classList.add('show');
+        setTimeout(() => {
+          toastSync.classList.remove('show');
+        }, 1500);
+      };
+
+      const updateUI = () => {
+        ['internos', 'externos', 'prestadores', 'visitas'].forEach(cat => {
+          const countEl = document.getElementById(`count-${cat}`);
+          const badgeEl = document.getElementById(`badge-${cat}`);
+          if (countEl) countEl.textContent = counts[cat] || 0;
+
+          if (badgeEl) {
+            const delta = pendingDeltas[cat];
+            if (delta !== 0) {
+              badgeEl.textContent = delta > 0 ? `+${delta}` : `${delta}`;
+              badgeEl.style.display = 'inline-block';
+              badgeEl.style.background = delta > 0 ? '#ef4444' : '#64748b';
+            } else {
+              badgeEl.style.display = 'none';
+            }
+          }
+        });
+
+        const totalCas = (counts.internos || 0) + (counts.externos || 0) + (counts.prestadores || 0) + (counts.visitas || 0);
+        const totalCasEl = document.getElementById('totalCaseta');
+        if (totalCasEl) totalCasEl.textContent = totalCas;
+      };
+
+      // Despacho acumulado tras 900ms de inactividad
+      const queueDispatch = (cat) => {
+        statusDot.className = 'status-dot syncing';
+        statusText.textContent = 'Guardando...';
+
+        if (debounceTimers[cat]) {
+          clearTimeout(debounceTimers[cat]);
+        }
+
+        debounceTimers[cat] = setTimeout(async () => {
+          const deltaToSend = pendingDeltas[cat];
+          if (deltaToSend === 0) return;
+
+          pendingDeltas[cat] = 0;
+          updateUI();
+
+          try {
+            const res = await fetch(`${BACKEND_BASE}/api/cdi/increment`, {
+              method: 'POST',
+              headers: API_HEADERS,
+              body: JSON.stringify({
+                fecha: currentDate,
+                caseta: currentCaseta,
+                categoria: cat,
+                count: deltaToSend
+              })
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.cdi && data.cdi.casetas && data.cdi.casetas[currentCaseta]) {
+                const cObj = data.cdi.casetas[currentCaseta];
+                counts.internos = cObj.internos || 0;
+                counts.externos = cObj.externos || 0;
+                counts.prestadores = cObj.prestadores || 0;
+                counts.visitas = cObj.visitas || 0;
+              }
+              if (data && data.cdi && data.cdi.totals) {
+                const totalGenEl = document.getElementById('totalGeneral');
+                if (totalGenEl) totalGenEl.textContent = data.cdi.totals.total || 0;
+              }
+              updateUI();
+              statusDot.className = 'status-dot';
+              statusDot.style.background = '#10b981';
+              statusText.textContent = 'En Vivo';
+              showToast();
+            } else {
+              throw new Error('Servidor retornó ' + res.status);
+            }
+          } catch (err) {
+            console.error('Error sincronizando CDI:', err);
+            statusDot.className = 'status-dot';
+            statusDot.style.background = '#ef4444';
+            statusText.textContent = 'Reintentando...';
+            // Restaurar delta pendiente para reintentar
+            pendingDeltas[cat] += deltaToSend;
+            updateUI();
+          }
+        }, 900);
+      };
+
+      // Toque en los 4 botones
+      document.querySelectorAll('.counter-btn').forEach(btn => {
+        btn.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          const cat = btn.dataset.cat;
+          if (!cat) return;
+
+          triggerHaptic(25);
+
+          const step = currentMode; // +1 o -1
+          const newCount = Math.max(0, (counts[cat] || 0) + step);
+          const effectiveDelta = newCount - (counts[cat] || 0);
+
+          if (effectiveDelta === 0 && step < 0) {
+            // Ya está en 0, no restar más
+            return;
+          }
+
+          counts[cat] = newCount;
+          pendingDeltas[cat] = (pendingDeltas[cat] || 0) + effectiveDelta;
+          updateUI();
+
+          queueDispatch(cat);
+        });
+      });
+
+      // Cargar datos iniciales
+      const fetchCdiData = async () => {
+        try {
+          const res = await fetch(`${BACKEND_BASE}/api/cdi?fecha=${currentDate}`, {
+            headers: API_HEADERS
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.cdi) {
+              const casObj = (data.cdi.casetas && data.cdi.casetas[currentCaseta]) || {};
+              counts.internos = casObj.internos || 0;
+              counts.externos = casObj.externos || 0;
+              counts.prestadores = casObj.prestadores || 0;
+              counts.visitas = casObj.visitas || 0;
+
+              const totalGenEl = document.getElementById('totalGeneral');
+              if (totalGenEl && data.cdi.totals) {
+                totalGenEl.textContent = data.cdi.totals.total || 0;
+              }
+            }
+            updateUI();
+            statusDot.className = 'status-dot';
+            statusDot.style.background = '#10b981';
+            statusText.textContent = 'En Vivo';
+          }
+        } catch (e) {
+          console.warn('Error al consultar datos CDI:', e);
+          statusDot.className = 'status-dot';
+          statusDot.style.background = '#f59e0b';
+          statusText.textContent = 'Sin conexión';
+        }
+      };
+
+      // SSE en vivo
+      const initSse = () => {
+        try {
+          const evtSource = new EventSource(`${BACKEND_BASE}/api/events`);
+          evtSource.onopen = () => {
+            statusDot.className = 'status-dot';
+            statusDot.style.background = '#10b981';
+            statusText.textContent = 'En Vivo';
+          };
+          evtSource.onerror = () => {
+            statusDot.className = 'status-dot';
+            statusDot.style.background = '#f59e0b';
+            statusText.textContent = 'Reconectando';
+          };
+          evtSource.onmessage = (e) => {
+            try {
+              const msg = JSON.parse(e.data);
+              if (msg && msg.type === 'cdi_update' && msg.payload) {
+                const data = msg.payload;
+                if (data.fecha === currentDate) {
+                  if (data.caseta === currentCaseta && data.casetaCounts) {
+                    const hasPending = Object.values(pendingDeltas).some(v => v !== 0);
+                    if (!hasPending) {
+                      counts.internos = data.casetaCounts.internos || 0;
+                      counts.externos = data.casetaCounts.externos || 0;
+                      counts.prestadores = data.casetaCounts.prestadores || 0;
+                      counts.visitas = data.casetaCounts.visitas || 0;
+                      updateUI();
+                    }
+                  }
+                  if (data.totals) {
+                    const totalGenEl = document.getElementById('totalGeneral');
+                    if (totalGenEl) totalGenEl.textContent = data.totals.total || 0;
+                  }
+                }
+              }
+            } catch (err) {}
+          };
+        } catch (e) {
+          console.warn('SSE no disponible:', e);
+        }
+      };
+
+      fetchCdiData();
+      initSse();
+
+      // Failsafe polling cada 8s para sincronización si la pantalla se bloqueó
+      setInterval(() => {
+        const hasPending = Object.values(pendingDeltas).some(v => v !== 0);
+        if (!hasPending) {
+          fetchCdiData();
+        }
+      }, 8000);
+    })();
+  </script>
+</body>
+</html>
