@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Accesos a corporativo - CDI Móvil</title>
+  <title>RegAs 3 - CDI Móvil (Contador de Ingresos)</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#f0f4f8">
@@ -357,6 +357,7 @@
     <div class="header-title">
       <span>🔢 CDI Móvil</span>
       <span class="header-badge">En Vivo</span>
+      <button type="button" id="btnVersionBadge" class="header-badge" style="cursor:pointer;border:none;background:rgba(56,189,248,0.18);color:#0284c7;font-weight:700;display:inline-flex;align-items:center;gap:3px;margin-left:4px;" title="Versión v246. Toca para recargar y purgar caché">v246 🔄</button>
     </div>
     <div class="connection-status">
       <span class="status-dot" id="statusDot"></span>
@@ -367,8 +368,6 @@
   <div class="top-controls">
     <div class="caseta-selector-box">
       <select id="casetaSelect" class="caseta-select">
-        <option value="Centro de Control">🏢 Centro de Control</option>
-        <option value="Encargado">👔 Encargado</option>
         <option value="Recepción Edison">📋 Recepción Edison</option>
         <option value="Edison">🛡️ Edison</option>
         <option value="Impulso">⚡ Impulso</option>
@@ -376,7 +375,6 @@
         <option value="Simón Bolívar">🏛️ Simón Bolívar</option>
         <option value="Carranza">🚪 Carranza</option>
         <option value="Universidad">🏫 Universidad</option>
-        <option value="Rondinero">🚶 Rondinero</option>
         <option value="Anexo Edison">🏭 Anexo Edison</option>
       </select>
     </div>
@@ -458,7 +456,14 @@
       };
 
       let currentDate = getTodayIso();
-      let currentCaseta = localStorage.getItem('regas_cdi_last_caseta') || localStorage.getItem('caseta_seleccionada_cic') || 'Centro de Control';
+      const validCasetas = ['Recepción Edison', 'Edison', 'Impulso', 'Michelena', 'Simón Bolívar', 'Carranza', 'Universidad', 'Anexo Edison'];
+      let storedCaseta = localStorage.getItem('regas_cdi_last_caseta') || localStorage.getItem('caseta_seleccionada_cic') || 'Recepción Edison';
+      if (!validCasetas.includes(storedCaseta)) {
+        storedCaseta = 'Recepción Edison';
+        localStorage.setItem('regas_cdi_last_caseta', storedCaseta);
+        localStorage.setItem('caseta_seleccionada_cic', storedCaseta);
+      }
+      let currentCaseta = storedCaseta;
       let currentMode = 1; // 1 = sumar, -1 = restar/corregir
 
       const counts = {
@@ -505,6 +510,9 @@
         localStorage.setItem('regas_cdi_last_caseta', currentCaseta);
         localStorage.setItem('caseta_seleccionada_cic', currentCaseta);
         fetchCdiData();
+        if (typeof sendDeviceHeartbeat === 'function') {
+          sendDeviceHeartbeat();
+        }
       });
 
       // Haptic feedback
@@ -591,6 +599,9 @@
               statusDot.style.background = '#10b981';
               statusText.textContent = 'En Vivo';
               showToast();
+              if (typeof sendDeviceHeartbeat === 'function') {
+                sendDeviceHeartbeat();
+              }
             } else {
               throw new Error('Servidor retornó ' + res.status);
             }
@@ -682,6 +693,15 @@
           evtSource.onmessage = (e) => {
             try {
               const msg = JSON.parse(e.data);
+              if (msg && msg.type === 'cdi_force_reload' && msg.payload) {
+                const target = msg.payload.targetDeviceId || 'all';
+                if (target === 'all' || target === deviceUuid) {
+                  if (typeof handleRemoteForceReload === 'function') {
+                    handleRemoteForceReload(msg.payload.timestamp);
+                  }
+                  return;
+                }
+              }
               if (msg && msg.type === 'cdi_update' && msg.payload) {
                 const data = msg.payload;
                 if (data.fecha === currentDate) {
@@ -707,6 +727,197 @@
           console.warn('SSE no disponible:', e);
         }
       };
+
+      // =========================================================================
+      // GESTIÓN DE INFORMACIÓN DEL DISPOSITIVO Y REPORTE AL OPERADOR
+      // =========================================================================
+      let deviceUuid = localStorage.getItem('regas_cdi_device_uuid');
+      if (!deviceUuid) {
+        deviceUuid = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
+        localStorage.setItem('regas_cdi_device_uuid', deviceUuid);
+      }
+
+      let lastReloadApplied = parseInt(localStorage.getItem('regas_cdi_last_reload_applied') || '0', 10);
+      let isReloading = false;
+
+      async function handleRemoteForceReload(reloadTs) {
+        if (isReloading) return;
+        const tsNum = Number(reloadTs) || Date.now();
+        if (tsNum <= lastReloadApplied) return;
+        isReloading = true;
+        lastReloadApplied = tsNum;
+        localStorage.setItem('regas_cdi_last_reload_applied', String(tsNum));
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.96);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999999;font-family:system-ui,-apple-system,sans-serif;padding:24px;text-align:center;box-sizing:border-box;';
+        overlay.innerHTML = `
+          <div style="font-size: 2.8rem; margin-bottom: 14px; animation: spin 1s linear infinite;">🔄</div>
+          <h3 style="margin: 0 0 10px 0; font-size: 1.25rem; font-weight: 700; color: #38bdf8;">Actualizando Aplicación</h3>
+          <p style="margin: 0; font-size: 0.88rem; color: #94a3b8; max-width: 320px; line-height: 1.4;">El servidor ha solicitado una actualización obligatoria. Obteniendo la versión más reciente...</p>
+        `;
+        document.body.appendChild(overlay);
+
+        try {
+          if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of registrations) {
+              await reg.update().catch(() => {});
+              await reg.unregister().catch(() => {});
+            }
+          }
+        } catch (e) {}
+
+        try {
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            for (const k of keys) {
+              await caches.delete(k);
+            }
+          }
+        } catch (e) {}
+
+        setTimeout(() => {
+          const url = new URL(window.location.href);
+          url.searchParams.set('_v', Date.now().toString());
+          window.location.replace(url.toString());
+        }, 900);
+      }
+
+      function detectDeviceInfo() {
+        const ua = navigator.userAgent || '';
+        let model = 'Dispositivo Web';
+        let type = 'pc';
+
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || (navigator.userAgentData && navigator.userAgentData.mobile);
+        type = isMobile ? 'mobile' : 'pc';
+
+        if (/iPhone/i.test(ua)) {
+          model = 'Apple iPhone';
+        } else if (/iPad/i.test(ua)) {
+          model = 'Apple iPad';
+          type = 'mobile';
+        } else if (/Android/i.test(ua)) {
+          const match = ua.match(/Android[^;]+;\s*([^;)]+)\)/i);
+          if (match && match[1]) {
+            model = match[1].replace(/Build\/.*/i, '').trim();
+          } else {
+            model = 'Android';
+          }
+        } else if (/Windows NT/i.test(ua)) {
+          model = 'PC Windows';
+        } else if (/Macintosh|Mac OS X/i.test(ua)) {
+          model = 'Mac (macOS)';
+        } else if (/Linux/i.test(ua)) {
+          model = 'PC Linux';
+        }
+
+        if (navigator.userAgentData && navigator.userAgentData.platform) {
+          if (!model.includes('Android') && !model.includes('iPhone')) {
+            model = `${model} (${navigator.userAgentData.platform})`;
+          }
+        }
+
+        return { model, type };
+      }
+
+      const { model: deviceModel, type: deviceType } = detectDeviceInfo();
+      let cachedDeviceLocation = null;
+      let isRequestingLocation = false;
+
+      function requestDeviceLocation(onLocationReady) {
+        if (!navigator.geolocation) {
+          cachedDeviceLocation = { status: 'unsupported', error: 'GPS no soportado' };
+          if (onLocationReady) onLocationReady(cachedDeviceLocation);
+          return;
+        }
+        if (isRequestingLocation) return;
+        isRequestingLocation = true;
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            isRequestingLocation = false;
+            cachedDeviceLocation = {
+              status: 'ok',
+              lat: Number(pos.coords.latitude.toFixed(6)),
+              lng: Number(pos.coords.longitude.toFixed(6)),
+              accuracy: Math.round(pos.coords.accuracy),
+              timestamp: pos.timestamp
+            };
+            if (onLocationReady) onLocationReady(cachedDeviceLocation);
+          },
+          (err) => {
+            isRequestingLocation = false;
+            let errText = 'GPS no disponible';
+            if (err.code === 1) errText = 'Permiso GPS denegado';
+            else if (err.code === 2) errText = 'Señal GPS no disponible';
+            else if (err.code === 3) errText = 'Tiempo de espera GPS agotado';
+            cachedDeviceLocation = { status: 'error', error: errText };
+            if (onLocationReady) onLocationReady(cachedDeviceLocation);
+          },
+          { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+        );
+      }
+
+      async function sendDeviceHeartbeat() {
+        const payload = {
+          deviceId: deviceUuid,
+          deviceModel: deviceModel,
+          deviceType: deviceType, // 'mobile' | 'pc'
+          caseta: currentCaseta,
+          location: cachedDeviceLocation,
+          lastReloadApplied: lastReloadApplied,
+          timestamp: Date.now()
+        };
+
+        try {
+          const res = await fetch(`${BACKEND_BASE}/api/cdi/device-heartbeat`, {
+            method: 'POST',
+            headers: API_HEADERS,
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.forceReload) {
+              handleRemoteForceReload(data.reloadTimestamp);
+            }
+          }
+        } catch (err) {}
+      }
+
+      // Botón manual de versión y recarga forzada en header
+      const btnVersionBadge = document.getElementById('btnVersionBadge');
+      if (btnVersionBadge) {
+        btnVersionBadge.addEventListener('click', () => {
+          if (confirm('¿Deseas forzar la actualización de CDI Móvil a la versión más reciente? Esto limpiará la memoria caché local.')) {
+            handleRemoteForceReload(Date.now() + 1000);
+          }
+        });
+      }
+
+      // Enviar reporte inicial de dispositivo y solicitar geolocalización
+      sendDeviceHeartbeat();
+      requestDeviceLocation(() => {
+        sendDeviceHeartbeat();
+      });
+
+      // Reintentar geolocalización periódicamente (cada 60s) si no se tiene posición fija
+      setInterval(() => {
+        if (!cachedDeviceLocation || cachedDeviceLocation.status !== 'ok') {
+          requestDeviceLocation(() => {
+            sendDeviceHeartbeat();
+          });
+        }
+      }, 60000);
+
+      // Heartbeat periódico cada 25s
+      setInterval(sendDeviceHeartbeat, 25000);
+
+      // Heartbeat al reenfocar la pantalla
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          sendDeviceHeartbeat();
+        }
+      });
 
       fetchCdiData();
       initSse();
