@@ -3,26 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>RegAs 3 - CDI Móvil (Contador de Ingresos)</title>
+  <title>RegAs 3 — CDI Móvil (Control y Conteo de Ingresos)</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#f0f4f8">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><path d='M7 12h10M12 7v10'/></svg>">
   <style>
     :root {
-      /* Modo claro por defecto */
+      /* Paleta moderna y dinámica */
       --bg: #f0f4f8;
       --card-bg: #ffffff;
-      --card-border: rgba(0, 0, 0, 0.09);
-      --text: #1e293b;
+      --card-border: rgba(148, 163, 184, 0.28);
+      --card-border-subtle: rgba(226, 232, 240, 0.85);
+      --text: #0f172a;
       --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      
       --accent-blue: #2563eb;
+      --accent-blue-soft: rgba(37, 99, 235, 0.08);
       --accent-emerald: #059669;
+      --accent-emerald-soft: rgba(5, 150, 105, 0.08);
       --accent-amber: #d97706;
+      --accent-amber-soft: rgba(217, 119, 6, 0.08);
       --accent-purple: #7c3aed;
-      --accent-cyan: #0891b2;
-      --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-      --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
+      --accent-purple-soft: rgba(124, 58, 237, 0.08);
+      --accent-cyan: #0284c7;
+      --accent-rose: #ef4444;
+      --accent-rose-soft: rgba(239, 68, 68, 0.08);
+
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.1), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
+      --shadow-dock: 0 8px 24px -2px rgba(15, 23, 42, 0.09), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
     }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -30,227 +44,328 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
+
     html, body {
       height: 100%;
       height: 100dvh;
     }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
       display: flex;
       flex-direction: column;
-      padding: env(safe-area-inset-top, 8px) 12px env(safe-area-inset-bottom, 10px) 12px;
+      padding: env(safe-area-inset-top, 6px) 12px env(safe-area-inset-bottom, 8px) 12px;
       overflow-x: hidden;
       overflow-y: auto;
     }
+
+    /* ── HEADER ── */
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 0 10px;
+      padding: 6px 2px 8px;
       border-bottom: 1px solid var(--card-border);
+      flex-shrink: 0;
     }
-    .header-title {
-      font-size: 0.98rem;
-      font-weight: 800;
-      letter-spacing: -0.01em;
+
+    .header-title-box {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    .header-badge {
-      font-size: 0.65rem;
-      padding: 2px 6px;
-      background: rgba(37, 99, 235, 0.12);
-      border: 1px solid rgba(37, 99, 235, 0.3);
-      color: var(--accent-blue);
-      border-radius: 999px;
-      font-weight: 700;
+
+    .header-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
+
+    .header-badge-live {
+      font-size: 0.62rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 7px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      color: #059669;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-badge-live::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+      animation: pulseLive 1.8s infinite;
+    }
+
+    @keyframes pulseLive {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    .header-version-btn {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #0284c7;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .header-version-btn:active {
+      transform: scale(0.94);
+      background: rgba(56, 189, 248, 0.28);
+    }
+
     .connection-status {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
+      font-weight: 600;
       color: var(--text-muted);
     }
+
     .status-dot {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background: #059669;
-      box-shadow: 0 0 6px #059669;
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+      transition: background 0.2s ease, box-shadow 0.2s ease;
     }
     .status-dot.syncing {
       background: #d97706;
       box-shadow: 0 0 6px #d97706;
-      animation: pulse 0.8s infinite;
+      animation: pulseSync 0.8s infinite;
     }
-    @keyframes pulse {
+    .status-dot.offline {
+      background: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
+    @keyframes pulseSync {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(1.2); }
+      50% { opacity: 0.3; transform: scale(1.2); }
     }
 
     /* ── CONTROLES SUPERIORES ── */
     .top-controls {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin: 12px 0 14px;
+      gap: 8px;
+      margin: 8px 0 6px;
+      flex-shrink: 0;
     }
+
     .caseta-selector-box {
       flex: 1;
+      position: relative;
     }
-    /* Caseta destacada */
+
     .caseta-select {
       width: 100%;
-      padding: 11px 40px 11px 14px;
+      padding: 9px 36px 9px 12px;
       background: var(--card-bg);
       border: 2px solid var(--accent-blue);
       border-radius: 12px;
       color: var(--text);
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       font-weight: 700;
       outline: none;
       appearance: none;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 12px center;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.12), var(--shadow-sm);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1), var(--shadow-sm);
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-    .caseta-select:focus {
-      border-color: #1d4ed8;
-      box-shadow: 0 0 0 4px rgba(37,99,235,0.2), var(--shadow-sm);
     }
 
     .mode-toggle {
       display: inline-flex;
       background: #e2e8f0;
       border: 1px solid var(--card-border);
-      border-radius: 10px;
+      border-radius: 11px;
       padding: 3px;
       gap: 2px;
     }
+
     .mode-btn {
       border: none;
       background: transparent;
       color: var(--text-muted);
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 7px 11px;
-      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 7px 12px;
+      border-radius: 8px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      transition: all 0.15s ease;
+      transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+    }
+    .mode-btn:active {
+      transform: scale(0.96);
     }
     .mode-btn.active {
       background: var(--accent-blue);
       color: #ffffff;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
     }
     .mode-btn.mode-sub.active {
       background: #ef4444;
-      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
     }
 
-    /* ── GRILLA DE BOTONES ── */
+    /* BANNER MODO CORRECCIÓN */
+    .mode-alert-banner {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #b91c1c;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+      animation: fadeIn 0.15s ease;
+    }
+    .mode-alert-banner.show {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── GRILLA DE BOTONES DE CONTEO ── */
     .grid-wrapper {
-      flex: 1;                   /* ocupa el espacio entre controles y footer */
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: 0;
+      margin: 4px 0;
     }
+
     .counter-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      /* NO flex:1 para que no se estire verticalmente */
-      padding: 0 20px;           /* margen amplio lateral */
-      margin: 10px 0;
+      gap: 12px;
+      width: 100%;
+      max-width: 480px;
       align-content: center;
       justify-content: center;
     }
+
     .counter-btn {
       background: var(--card-bg);
       border: 1.5px solid var(--card-border);
       border-radius: 18px;
-      padding: 0;
+      padding: 8px 6px;
       width: 100%;
-      aspect-ratio: 1 / 1;      /* ← cuadrado exacto */
-      min-width: 200px;
-      min-height: 200px;
+      aspect-ratio: 1 / 1;
+      min-width: 0;
+      max-height: 185px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      gap: 4px;
       color: var(--text);
       cursor: pointer;
       position: relative;
       overflow: hidden;
       touch-action: manipulation;
-      transition: transform 0.08s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease;
-      box-shadow: var(--shadow-sm);
+      transition: transform 0.08s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease, background 0.15s ease;
+      box-shadow: var(--shadow-md);
     }
-    /* Imagen de fondo desvanecida usando pseudo-elemento */
+
     .counter-btn::before {
       content: attr(data-bg-icon);
       position: absolute;
-      bottom: -8px;
-      right: -4px;
-      font-size: 4.5rem;
+      bottom: -6px;
+      right: -2px;
+      font-size: 3.8rem;
       line-height: 1;
-      opacity: 0.07;
+      opacity: 0.06;
       pointer-events: none;
       filter: grayscale(0.2);
-      transform: rotate(-10deg);
+      transform: rotate(-8deg);
       transition: opacity 0.15s ease;
     }
-    .counter-btn:active::before {
-      opacity: 0.13;
-    }
+
     .counter-btn:active {
-      transform: scale(0.96);
-      box-shadow: var(--shadow-md);
+      transform: scale(0.95);
+      box-shadow: var(--shadow-sm);
     }
+    .counter-btn:active::before {
+      opacity: 0.12;
+    }
+
     .counter-btn.btn-internos {
       border-top: 4px solid var(--accent-blue);
     }
     .counter-btn.btn-internos:active {
-      background: rgba(37, 99, 235, 0.06);
+      background: var(--accent-blue-soft);
     }
     .counter-btn.btn-externos {
       border-top: 4px solid var(--accent-amber);
     }
     .counter-btn.btn-externos:active {
-      background: rgba(217, 119, 6, 0.06);
+      background: var(--accent-amber-soft);
     }
     .counter-btn.btn-prestadores {
       border-top: 4px solid var(--accent-purple);
     }
     .counter-btn.btn-prestadores:active {
-      background: rgba(124, 58, 237, 0.06);
+      background: var(--accent-purple-soft);
     }
     .counter-btn.btn-visitas {
       border-top: 4px solid var(--accent-emerald);
     }
     .counter-btn.btn-visitas:active {
-      background: rgba(5, 150, 105, 0.06);
+      background: var(--accent-emerald-soft);
+    }
+
+    body.sub-mode .counter-btn {
+      border-color: rgba(239, 68, 68, 0.4);
     }
 
     .btn-icon {
-      font-size: 1.5rem;
+      font-size: 1.55rem;
       line-height: 1;
       position: relative;
       z-index: 1;
     }
+
     .btn-label {
       font-size: 0.72rem;
-      font-weight: 700;
+      font-weight: 800;
       text-align: center;
       letter-spacing: 0.04em;
       text-transform: uppercase;
@@ -258,8 +373,9 @@
       position: relative;
       z-index: 1;
     }
+
     .btn-count {
-      font-size: 1.7rem;
+      font-size: clamp(1.8rem, 5.5vw, 2.5rem);
       font-weight: 800;
       line-height: 1;
       font-variant-numeric: tabular-nums;
@@ -267,6 +383,7 @@
       position: relative;
       z-index: 1;
     }
+
     .counter-btn.btn-internos .btn-count  { color: var(--accent-blue); }
     .counter-btn.btn-externos .btn-count  { color: var(--accent-amber); }
     .counter-btn.btn-prestadores .btn-count { color: var(--accent-purple); }
@@ -274,8 +391,8 @@
 
     .btn-pending-badge {
       position: absolute;
-      top: 7px;
-      right: 9px;
+      top: 6px;
+      right: 8px;
       background: #ef4444;
       color: #fff;
       font-size: 0.65rem;
@@ -287,27 +404,173 @@
       animation: popIn 0.15s ease;
       z-index: 2;
     }
+
     @keyframes popIn {
       0% { transform: scale(0.4); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
 
-    /* ── FOOTER ── */
+    /* ── DOCK DE APLICACIONES DE CASETA (INTEGRADO DEBAJO DE LOS BOTONES DE CONTEO) ── */
+    .app-dock-wrapper {
+      flex-shrink: 0;
+      width: 100%;
+      max-width: 480px;
+      margin: 4px auto 8px;
+    }
+
+    .dock-header-label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      padding-left: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dock-header-label::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+    }
+
+    .app-dock {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 7px 9px;
+      box-shadow: var(--shadow-dock);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .dock-app-btn {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 10px;
+      background: #f8fafc;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 13px;
+      text-decoration: none;
+      color: var(--text);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+      touch-action: manipulation;
+    }
+
+    .dock-app-btn:hover {
+      background: #ffffff;
+      border-color: rgba(203, 213, 225, 1);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .dock-app-btn:active {
+      transform: scale(0.96);
+      background: #f1f5f9;
+    }
+
+    .dock-icon-squircle {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #ffffff;
+      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15);
+      position: relative;
+    }
+
+    .dock-icon-squircle.icon-checador {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    }
+
+    .dock-icon-squircle.icon-recorridos {
+      background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    }
+
+    .dock-icon-squircle svg {
+      width: 19px;
+      height: 19px;
+      stroke-width: 2.2;
+    }
+
+    .dock-app-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .dock-app-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      line-height: 1.15;
+    }
+
+    .dock-app-subtitle {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      line-height: 1.15;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dock-app-arrow {
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .dock-app-btn:active .dock-app-arrow {
+      transform: translateX(2px);
+      color: var(--accent-blue);
+    }
+
+    /* ── RESUMEN EN FOOTER ── */
     .footer-summary {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 9px 16px;
+      border-radius: 14px;
+      padding: 8px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-top: auto;
       box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+      max-width: 480px;
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
     }
+
     .summary-item {
       display: flex;
       flex-direction: column;
     }
+
     .summary-title {
       font-size: 0.65rem;
       color: var(--text-muted);
@@ -315,8 +578,9 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
+
     .summary-value {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       font-weight: 800;
       color: var(--text);
       font-variant-numeric: tabular-nums;
@@ -328,7 +592,7 @@
       bottom: 60px;
       left: 50%;
       transform: translateX(-50%) translateY(100px);
-      background: rgba(15, 23, 42, 0.92);
+      background: rgba(15, 23, 42, 0.94);
       border: 1px solid rgba(255, 255, 255, 0.15);
       color: #fff;
       padding: 6px 16px;
@@ -343,21 +607,63 @@
       opacity: 0;
       pointer-events: none;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 99;
+      z-index: 999;
     }
     .toast-sync.show {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
     }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── MODO OSCURO AUTOMÁTICO ── */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #090d16;
+        --card-bg: #111827;
+        --card-border: rgba(255, 255, 255, 0.1);
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --text-dim: #64748b;
+        --shadow-dock: 0 8px 30px rgba(0, 0, 0, 0.5);
+      }
+      .app-dock {
+        background: rgba(17, 24, 39, 0.92);
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+      .dock-app-btn {
+        background: #1e293b;
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+      .dock-app-btn:hover {
+        background: #273549;
+      }
+      .dock-app-btn:active {
+        background: #334155;
+      }
+      .mode-toggle {
+        background: #1e293b;
+      }
+      .caseta-select {
+        background-color: #111827;
+        color: #f8fafc;
+      }
+    }
   </style>
 </head>
 <body>
 
+  <!-- HEADER -->
   <header class="header">
-    <div class="header-title">
-      <span>🔢 CDI Móvil</span>
-      <span class="header-badge">En Vivo</span>
-      <button type="button" id="btnVersionBadge" class="header-badge" style="cursor:pointer;border:none;background:rgba(56,189,248,0.18);color:#0284c7;font-weight:700;display:inline-flex;align-items:center;gap:3px;margin-left:4px;" title="Versión v246. Toca para recargar y purgar caché">v246 🔄</button>
+    <div class="header-title-box">
+      <div class="header-title">
+        <span>🔢 CDI Móvil</span>
+        <span class="header-badge-live">En Vivo</span>
+        <button type="button" id="btnVersionBadge" class="header-version-btn" title="Versión v270. Toca para recargar y purgar caché">v270 🔄</button>
+      </div>
     </div>
     <div class="connection-status">
       <span class="status-dot" id="statusDot"></span>
@@ -365,6 +671,7 @@
     </div>
   </header>
 
+  <!-- CONTROLES SUPERIORES (CASETA Y MODO) -->
   <div class="top-controls">
     <div class="caseta-selector-box">
       <select id="casetaSelect" class="caseta-select">
@@ -385,6 +692,12 @@
     </div>
   </div>
 
+  <!-- AVISO VISUAL DE MODO CORRECCIÓN (-1) -->
+  <div class="mode-alert-banner" id="modeAlertBanner">
+    <span>⚠️ Modo Corrección (−1) activo: Cada toque descontará 1 al contador</span>
+  </div>
+
+  <!-- GRILLA DE BOTONES DE CONTEO -->
   <div class="grid-wrapper">
     <div class="counter-grid">
       <!-- 1. INTERNOS -->
@@ -421,6 +734,48 @@
     </div>
   </div>
 
+  <!-- DOCK DE APLICACIONES DE CASETA (INTEGRADO DEBAJO DE LOS BOTONES DE CONTEO) -->
+  <nav class="app-dock-wrapper" aria-label="Aplicaciones de Caseta">
+    <div class="dock-header-label">Aplicaciones de Caseta</div>
+    <div class="app-dock">
+      <!-- 1. CHECADOR -->
+      <a href="entrada-movil.html" class="dock-app-btn" id="dockBtnChecador" title="Abrir Checador (Asistencia Facial)">
+        <div class="dock-icon-squircle icon-checador">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+        <div class="dock-app-info">
+          <span class="dock-app-title">Checador</span>
+          <span class="dock-app-subtitle">Asistencia Facial</span>
+        </div>
+        <div class="dock-app-arrow">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
+
+      <!-- 2. RECORRIDOS -->
+      <a href="recorrido-movil.html" class="dock-app-btn" id="dockBtnRecorridos" title="Abrir Recorridos (Rondines GPS)">
+        <div class="dock-icon-squircle icon-recorridos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/>
+            <line x1="16" y1="6" x2="16" y2="22"/>
+          </svg>
+        </div>
+        <div class="dock-app-info">
+          <span class="dock-app-title">Recorridos</span>
+          <span class="dock-app-subtitle">Rondines GPS</span>
+        </div>
+        <div class="dock-app-arrow">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
+    </div>
+  </nav>
+
+  <!-- RESUMEN FOOTER -->
   <div class="footer-summary">
     <div class="summary-item">
       <span class="summary-title">Total Caseta</span>
@@ -432,10 +787,12 @@
     </div>
   </div>
 
+  <!-- TOAST DE CONFIRMACIÓN -->
   <div class="toast-sync" id="toastSync">
     <span>✓ Sincronizado</span>
   </div>
 
+  <!-- LÓGICA DE CONTROL, SINCRONIZACIÓN Y ACTUALIZACIÓN EN VIVO -->
   <script>
     (function() {
       // Detección dinámica e inteligente del backend (Local, Red Caseta 10.x / 192.168.x, o Cloud Worker UBE)
@@ -523,17 +880,24 @@
       const casetaSelect = document.getElementById('casetaSelect');
       const btnModeAdd = document.getElementById('btnModeAdd');
       const btnModeSub = document.getElementById('btnModeSub');
+      const modeAlertBanner = document.getElementById('modeAlertBanner');
 
       if (btnModeAdd && btnModeSub) {
         btnModeAdd.addEventListener('click', () => {
           currentMode = 1;
           btnModeAdd.classList.add('active');
           btnModeSub.classList.remove('active');
+          document.body.classList.remove('sub-mode');
+          if (modeAlertBanner) modeAlertBanner.classList.remove('show');
+          triggerHaptic(20);
         });
         btnModeSub.addEventListener('click', () => {
           currentMode = -1;
           btnModeSub.classList.add('active');
           btnModeAdd.classList.remove('active');
+          document.body.classList.add('sub-mode');
+          if (modeAlertBanner) modeAlertBanner.classList.add('show');
+          triggerHaptic(30);
         });
       }
 
@@ -551,7 +915,7 @@
         }
       });
 
-      // Haptic feedback
+      // Feedback táctil hápitco
       const triggerHaptic = (ms = 25) => {
         if (navigator.vibrate) {
           try { navigator.vibrate(ms); } catch (e) {}
@@ -643,8 +1007,7 @@
             }
           } catch (err) {
             console.error('Error sincronizando CDI:', err);
-            statusDot.className = 'status-dot';
-            statusDot.style.background = '#ef4444';
+            statusDot.className = 'status-dot offline';
             statusText.textContent = 'Reintentando...';
             pendingDeltas[cat] += deltaToSend;
             updateUI();
@@ -705,8 +1068,7 @@
           }
         } catch (e) {
           console.warn('Error al consultar datos CDI:', e);
-          statusDot.className = 'status-dot';
-          statusDot.style.background = '#f59e0b';
+          statusDot.className = 'status-dot offline';
           statusText.textContent = 'Sin conexión';
         }
       };
@@ -721,8 +1083,7 @@
             statusText.textContent = 'En Vivo';
           };
           evtSource.onerror = () => {
-            statusDot.className = 'status-dot';
-            statusDot.style.background = '#f59e0b';
+            statusDot.className = 'status-dot syncing';
             statusText.textContent = 'Reconectando';
           };
           evtSource.onmessage = (e) => {
@@ -764,7 +1125,48 @@
       };
 
       // =========================================================================
-      // GESTIÓN DE INFORMACIÓN DEL DISPOSITIVO Y REPORTE AL OPERADOR
+      // NAVEGACIÓN DESDE EL DOCK APLICACIONES (CHECADOR Y RECORRIDOS)
+      // =========================================================================
+      const navigateToSubapp = (targetFile) => {
+        triggerHaptic(35);
+
+        const params = new URLSearchParams(window.location.search);
+        if (currentCaseta) {
+          params.set('caseta', currentCaseta);
+        }
+        if (BACKEND_BASE && !params.get('backend') && !params.get('api')) {
+          params.set('backend', BACKEND_BASE);
+        }
+
+        let targetUrl = targetFile;
+        // Si se corre en GitHub Pages y no existe la subapp en la misma ruta, fallback a hosting central
+        if (window.location.hostname.includes('github.io')) {
+          targetUrl = `./${targetFile}`;
+        }
+
+        const qs = params.toString();
+        const finalUrl = qs ? `${targetUrl}?${qs}` : targetUrl;
+        window.location.href = finalUrl;
+      };
+
+      const btnChecador = document.getElementById('dockBtnChecador');
+      if (btnChecador) {
+        btnChecador.addEventListener('click', (e) => {
+          e.preventDefault();
+          navigateToSubapp('entrada-movil.html');
+        });
+      }
+
+      const btnRecorridos = document.getElementById('dockBtnRecorridos');
+      if (btnRecorridos) {
+        btnRecorridos.addEventListener('click', (e) => {
+          e.preventDefault();
+          navigateToSubapp('recorrido-movil.html');
+        });
+      }
+
+      // =========================================================================
+      // GESTIÓN DE INFORMACIÓN DEL DISPOSITIVO Y TECNOLOGÍA DE ACTUALIZACIÓN REMOTA
       // =========================================================================
       let deviceUuid = localStorage.getItem('regas_cdi_device_uuid');
       if (!deviceUuid) {
@@ -786,9 +1188,12 @@
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.96);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999999;font-family:system-ui,-apple-system,sans-serif;padding:24px;text-align:center;box-sizing:border-box;';
         overlay.innerHTML = `
-          <div style="font-size: 2.8rem; margin-bottom: 14px; animation: spin 1s linear infinite;">🔄</div>
-          <h3 style="margin: 0 0 10px 0; font-size: 1.25rem; font-weight: 700; color: #38bdf8;">Actualizando Aplicación</h3>
-          <p style="margin: 0; font-size: 0.88rem; color: #94a3b8; max-width: 320px; line-height: 1.4;">El servidor ha solicitado una actualización obligatoria. Obteniendo la versión más reciente...</p>
+          <div style="font-size: 3.2rem; margin-bottom: 14px; animation: spin 1s linear infinite;">🔄</div>
+          <h3 style="margin: 0 0 10px 0; font-size: 1.3rem; font-weight: 800; color: #38bdf8; letter-spacing: -0.01em;">Actualizando CDI Móvil</h3>
+          <p style="margin: 0 0 16px 0; font-size: 0.9rem; color: #94a3b8; max-width: 320px; line-height: 1.5;">El servidor ha enviado una solicitud de actualización obligatoria. Purgando caché local e instalando el nuevo rediseño con Dock...</p>
+          <div style="width: 200px; height: 6px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden; position: relative;">
+            <div style="width: 100%; height: 100%; background: #38bdf8; animation: pulseSync 1s infinite alternate;"></div>
+          </div>
         `;
         document.body.appendChild(overlay);
 
@@ -926,7 +1331,7 @@
       const btnVersionBadge = document.getElementById('btnVersionBadge');
       if (btnVersionBadge) {
         btnVersionBadge.addEventListener('click', () => {
-          if (confirm('¿Deseas forzar la actualización de CDI Móvil a la versión más reciente? Esto limpiará la memoria caché local.')) {
+          if (confirm('¿Deseas forzar la actualización de CDI Móvil a la versión más reciente v270? Esto limpiará la memoria caché local y recargará la aplicación con el nuevo Dock.')) {
             handleRemoteForceReload(Date.now() + 1000);
           }
         });
