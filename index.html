@@ -438,10 +438,46 @@
 
   <script>
     (function() {
-      // Base URL dinámico: apunta al backend túnel público cuando corre en Firebase Hosting
-      const BACKEND_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? ''
-        : 'https://be-regas.segos911.workers.dev';
+      // Detección dinámica e inteligente del backend (Local, Red Caseta 10.x / 192.168.x, o Cloud Worker UBE)
+      const resolveBackendBase = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const qBackend = urlParams.get('backend') || urlParams.get('api');
+        if (qBackend) {
+          try { localStorage.setItem('regas_active_api_base', qBackend); } catch(e) {}
+          return qBackend.replace(/\/+$/, '');
+        }
+        const qIp = urlParams.get('ip');
+        if (qIp) {
+          const formatted = `http://${qIp}:7001`;
+          try { localStorage.setItem('regas_active_api_base', formatted); } catch(e) {}
+          return formatted;
+        }
+
+        const h = window.location.hostname;
+        const p = window.location.port;
+
+        // 1. Si se sirve desde el servidor local (puerto 7000 o 7001)
+        if (p === '7000' || p === '7001') return '';
+
+        // 2. Si corre en localhost o 127.0.0.1
+        if (h === 'localhost' || h === '127.0.0.1') return 'http://127.0.0.1:7001';
+
+        // 3. Si corre desde la red interna de la caseta (10.x, 192.168.x, 172.x)
+        if (h.startsWith('10.') || h.startsWith('192.168.') || /^172\.(1[6-9]|2\d|3[01])\./.test(h)) {
+          return `http://${h}:7001`;
+        }
+
+        // 4. Si se configuró previamente en localStorage
+        try {
+          const cached = localStorage.getItem('regas_active_api_base');
+          if (cached && !cached.includes('10.200.79.175')) return cached.replace(/\/+$/, '');
+        } catch(e) {}
+
+        // 5. Fallback por defecto: Cloudflare Worker oficial permanente UBE
+        return 'https://be-regas.segos911.workers.dev';
+      };
+
+      let BACKEND_BASE = resolveBackendBase();
 
       const API_HEADERS = {
         'Content-Type': 'application/json',
@@ -553,7 +589,7 @@
         if (totalCasEl) totalCasEl.textContent = totalCas;
       };
 
-      // Despacho acumulado tras 900ms de inactividad
+      // Despacho acumulado tras 600ms de inactividad directamente a UBE / Worker
       const queueDispatch = (cat) => {
         statusDot.className = 'status-dot syncing';
         statusText.textContent = 'Guardando...';
@@ -610,11 +646,10 @@
             statusDot.className = 'status-dot';
             statusDot.style.background = '#ef4444';
             statusText.textContent = 'Reintentando...';
-            // Restaurar delta pendiente para reintentar
             pendingDeltas[cat] += deltaToSend;
             updateUI();
           }
-        }, 900);
+        }, 600);
       };
 
       // Toque en los 4 botones
@@ -866,22 +901,25 @@
           caseta: currentCaseta,
           location: cachedDeviceLocation,
           lastReloadApplied: lastReloadApplied,
+          lastSeen: new Date().toISOString(),
           timestamp: Date.now()
         };
 
-        try {
-          const res = await fetch(`${BACKEND_BASE}/api/cdi/device-heartbeat`, {
-            method: 'POST',
-            headers: API_HEADERS,
-            body: JSON.stringify(payload)
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.forceReload) {
-              handleRemoteForceReload(data.reloadTimestamp);
+        if (BACKEND_BASE) {
+          try {
+            const res = await fetch(`${BACKEND_BASE}/api/cdi/device-heartbeat`, {
+              method: 'POST',
+              headers: API_HEADERS,
+              body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.forceReload) {
+                handleRemoteForceReload(data.reloadTimestamp);
+              }
             }
-          }
-        } catch (err) {}
+          } catch (err) {}
+        }
       }
 
       // Botón manual de versión y recarga forzada en header
