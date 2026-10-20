@@ -10,7 +10,6 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><path d='M7 12h10M12 7v10'/></svg>">
   <style>
     :root {
-      /* Paleta moderna y dinámica */
       --bg: #f0f4f8;
       --card-bg: #ffffff;
       --card-border: rgba(148, 163, 184, 0.28);
@@ -32,9 +31,8 @@
       --accent-rose-soft: rgba(239, 68, 68, 0.08);
 
       --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-      --shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-      --shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.1), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
-      --shadow-dock: 0 8px 24px -2px rgba(15, 23, 42, 0.09), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 5px -1px rgba(15, 23, 42, 0.04);
+      --shadow-dock: 0 4px 18px -2px rgba(15, 23, 42, 0.09), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
     }
 
     * {
@@ -48,6 +46,8 @@
     html, body {
       height: 100%;
       height: 100dvh;
+      max-height: 100dvh;
+      overflow: hidden; /* Ajuste perfecto sin scroll en pantallas normales */
     }
 
     body {
@@ -56,9 +56,8 @@
       color: var(--text);
       display: flex;
       flex-direction: column;
-      padding: env(safe-area-inset-top, 6px) 12px env(safe-area-inset-bottom, 8px) 12px;
-      overflow-x: hidden;
-      overflow-y: auto;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top, 5px) 10px env(safe-area-inset-bottom, 6px) 10px;
     }
 
     /* ── HEADER ── */
@@ -66,7 +65,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 2px 8px;
+      padding: 3px 2px 6px;
       border-bottom: 1px solid var(--card-border);
       flex-shrink: 0;
     }
@@ -78,20 +77,20 @@
     }
 
     .header-title {
-      font-size: 0.96rem;
+      font-size: 0.92rem;
       font-weight: 800;
       letter-spacing: -0.01em;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
     .header-badge-live {
-      font-size: 0.62rem;
+      font-size: 0.58rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      padding: 2px 7px;
+      padding: 2px 6px;
       background: rgba(16, 185, 129, 0.12);
       border: 1px solid rgba(16, 185, 129, 0.32);
       color: #059669;
@@ -103,11 +102,11 @@
 
     .header-badge-live::before {
       content: '';
-      width: 5px;
-      height: 5px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
       background: #10b981;
-      box-shadow: 0 0 6px #10b981;
+      box-shadow: 0 0 5px #10b981;
       animation: pulseLive 1.8s infinite;
     }
 
@@ -117,9 +116,9 @@
     }
 
     .header-version-btn {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 700;
-      padding: 2px 7px;
+      padding: 2px 6px;
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.35);
       color: #0284c7;
@@ -140,27 +139,27 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 600;
       color: var(--text-muted);
     }
 
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: #10b981;
-      box-shadow: 0 0 6px #10b981;
+      box-shadow: 0 0 5px #10b981;
       transition: background 0.2s ease, box-shadow 0.2s ease;
     }
     .status-dot.syncing {
       background: #d97706;
-      box-shadow: 0 0 6px #d97706;
+      box-shadow: 0 0 5px #d97706;
       animation: pulseSync 0.8s infinite;
     }
     .status-dot.offline {
       background: #ef4444;
-      box-shadow: 0 0 6px #ef4444;
+      box-shadow: 0 0 5px #ef4444;
     }
 
     @keyframes pulseSync {
@@ -168,12 +167,12 @@
       50% { opacity: 0.3; transform: scale(1.2); }
     }
 
-    /* ── CONTROLES SUPERIORES ── */
+    /* ── CONTROLES SUPERIORES (CASETA Y MODO) ── */
     .top-controls {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin: 8px 0 6px;
+      gap: 7px;
+      margin: 4px 0 3px;
       flex-shrink: 0;
     }
 
@@ -184,28 +183,27 @@
 
     .caseta-select {
       width: 100%;
-      padding: 9px 36px 9px 12px;
+      padding: 7px 30px 7px 10px;
       background: var(--card-bg);
-      border: 2px solid var(--accent-blue);
-      border-radius: 12px;
+      border: 1.8px solid var(--accent-blue);
+      border-radius: 10px;
       color: var(--text);
-      font-size: 0.88rem;
+      font-size: 0.84rem;
       font-weight: 700;
       outline: none;
       appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 12px center;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1), var(--shadow-sm);
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      background-position: right 10px center;
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.08), var(--shadow-sm);
     }
 
     .mode-toggle {
       display: inline-flex;
       background: #e2e8f0;
       border: 1px solid var(--card-border);
-      border-radius: 11px;
-      padding: 3px;
+      border-radius: 9px;
+      padding: 2px;
       gap: 2px;
     }
 
@@ -213,14 +211,14 @@
       border: none;
       background: transparent;
       color: var(--text-muted);
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       font-weight: 800;
-      padding: 7px 12px;
-      border-radius: 8px;
+      padding: 6px 10px;
+      border-radius: 7px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
     }
     .mode-btn:active {
@@ -229,11 +227,11 @@
     .mode-btn.active {
       background: var(--accent-blue);
       color: #ffffff;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
     }
     .mode-btn.mode-sub.active {
       background: #ef4444;
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
     }
 
     /* BANNER MODO CORRECCIÓN */
@@ -241,15 +239,15 @@
       display: none;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       background: rgba(239, 68, 68, 0.12);
       border: 1px solid rgba(239, 68, 68, 0.35);
-      border-radius: 8px;
-      padding: 5px 10px;
-      font-size: 0.72rem;
+      border-radius: 7px;
+      padding: 3px 8px;
+      font-size: 0.68rem;
       font-weight: 700;
       color: #b91c1c;
-      margin-bottom: 6px;
+      margin-bottom: 2px;
       flex-shrink: 0;
       animation: fadeIn 0.15s ease;
     }
@@ -258,26 +256,26 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-3px); }
+      from { opacity: 0; transform: translateY(-2px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── GRILLA DE BOTONES DE CONTEO ── */
+    /* ── GRILLA DE BOTONES DE CONTEO (RESPONSIVA Y COMPACTA) ── */
     .grid-wrapper {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 0;
-      margin: 4px 0;
+      margin: 2px 0;
     }
 
     .counter-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 8px;
       width: 100%;
-      max-width: 480px;
+      max-width: 440px;
       align-content: center;
       justify-content: center;
     }
@@ -285,17 +283,18 @@
     .counter-btn {
       background: var(--card-bg);
       border: 1.5px solid var(--card-border);
-      border-radius: 18px;
-      padding: 8px 6px;
+      border-radius: 14px;
+      padding: 4px 6px;
       width: 100%;
       aspect-ratio: 1 / 1;
       min-width: 0;
-      max-height: 185px;
+      max-height: clamp(80px, 16.5vh, 135px);
+      min-height: 75px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 2px;
       color: var(--text);
       cursor: pointer;
       position: relative;
@@ -310,9 +309,9 @@
       position: absolute;
       bottom: -6px;
       right: -2px;
-      font-size: 3.8rem;
+      font-size: 3rem;
       line-height: 1;
-      opacity: 0.06;
+      opacity: 0.05;
       pointer-events: none;
       filter: grayscale(0.2);
       transform: rotate(-8deg);
@@ -328,25 +327,25 @@
     }
 
     .counter-btn.btn-internos {
-      border-top: 4px solid var(--accent-blue);
+      border-top: 3.5px solid var(--accent-blue);
     }
     .counter-btn.btn-internos:active {
       background: var(--accent-blue-soft);
     }
     .counter-btn.btn-externos {
-      border-top: 4px solid var(--accent-amber);
+      border-top: 3.5px solid var(--accent-amber);
     }
     .counter-btn.btn-externos:active {
       background: var(--accent-amber-soft);
     }
     .counter-btn.btn-prestadores {
-      border-top: 4px solid var(--accent-purple);
+      border-top: 3.5px solid var(--accent-purple);
     }
     .counter-btn.btn-prestadores:active {
       background: var(--accent-purple-soft);
     }
     .counter-btn.btn-visitas {
-      border-top: 4px solid var(--accent-emerald);
+      border-top: 3.5px solid var(--accent-emerald);
     }
     .counter-btn.btn-visitas:active {
       background: var(--accent-emerald-soft);
@@ -357,14 +356,14 @@
     }
 
     .btn-icon {
-      font-size: 1.55rem;
+      font-size: 1.35rem;
       line-height: 1;
       position: relative;
       z-index: 1;
     }
 
     .btn-label {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 800;
       text-align: center;
       letter-spacing: 0.04em;
@@ -375,11 +374,11 @@
     }
 
     .btn-count {
-      font-size: clamp(1.8rem, 5.5vw, 2.5rem);
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
       font-weight: 800;
       line-height: 1;
       font-variant-numeric: tabular-nums;
-      margin-top: 2px;
+      margin-top: 1px;
       position: relative;
       z-index: 1;
     }
@@ -391,16 +390,16 @@
 
     .btn-pending-badge {
       position: absolute;
-      top: 6px;
-      right: 8px;
+      top: 4px;
+      right: 6px;
       background: #ef4444;
       color: #fff;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 800;
-      padding: 2px 6px;
+      padding: 1px 5px;
       border-radius: 999px;
       display: none;
-      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
       animation: popIn 0.15s ease;
       z-index: 2;
     }
@@ -410,56 +409,66 @@
       100% { transform: scale(1); opacity: 1; }
     }
 
-    /* ── DOCK DE APLICACIONES DE CASETA (INTEGRADO DEBAJO DE LOS BOTONES DE CONTEO) ── */
-    .app-dock-wrapper {
+    /* ── CONTROLES INFERIORES: DOCK (3 APPS) Y RESUMEN ── */
+    .bottom-section {
       flex-shrink: 0;
       width: 100%;
-      max-width: 480px;
-      margin: 4px auto 8px;
+      max-width: 440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    /* DOCK DE 3 APLICACIONES (CHECADOR, RECORRIDOS, BITÁCORAS) */
+    .app-dock-wrapper {
+      width: 100%;
     }
 
     .dock-header-label {
-      font-size: 0.62rem;
+      font-size: 0.58rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.07em;
       color: var(--text-muted);
-      margin-bottom: 4px;
-      padding-left: 6px;
+      margin-bottom: 3px;
+      padding-left: 4px;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
     .dock-header-label::before {
       content: '';
-      width: 5px;
-      height: 5px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
       background: var(--accent-blue);
     }
 
     .app-dock {
       background: rgba(255, 255, 255, 0.94);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--card-border);
-      border-radius: 18px;
-      padding: 7px 9px;
+      border-radius: 14px;
+      padding: 5px 6px;
       box-shadow: var(--shadow-dock);
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 5px;
     }
 
     .dock-app-btn {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 9px;
-      padding: 7px 10px;
+      justify-content: center;
+      gap: 2px;
+      padding: 5px 3px;
       background: #f8fafc;
       border: 1px solid rgba(226, 232, 240, 0.9);
-      border-radius: 13px;
+      border-radius: 10px;
       text-decoration: none;
       color: var(--text);
       cursor: pointer;
@@ -467,30 +476,30 @@
       overflow: hidden;
       transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
       touch-action: manipulation;
+      text-align: center;
     }
 
     .dock-app-btn:hover {
       background: #ffffff;
       border-color: rgba(203, 213, 225, 1);
       transform: translateY(-1px);
-      box-shadow: var(--shadow-sm);
     }
 
     .dock-app-btn:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
       background: #f1f5f9;
     }
 
     .dock-icon-squircle {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
       color: #ffffff;
-      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
       position: relative;
     }
 
@@ -502,68 +511,50 @@
       background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
     }
 
+    .dock-icon-squircle.icon-bitacoras {
+      background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    }
+
     .dock-icon-squircle svg {
-      width: 19px;
-      height: 19px;
+      width: 15px;
+      height: 15px;
       stroke-width: 2.2;
     }
 
-    .dock-app-info {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      flex: 1;
-    }
-
     .dock-app-title {
-      font-size: 0.82rem;
+      font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: -0.01em;
       color: var(--text);
-      line-height: 1.15;
-    }
-
-    .dock-app-subtitle {
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      line-height: 1.15;
-      margin-top: 1px;
+      line-height: 1.1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 100%;
     }
 
-    .dock-app-arrow {
-      color: var(--text-dim);
-      font-size: 0.8rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      transition: transform 0.15s ease, color 0.15s ease;
+    .dock-app-subtitle {
+      font-size: 0.58rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
-    .dock-app-btn:active .dock-app-arrow {
-      transform: translateX(2px);
-      color: var(--accent-blue);
-    }
-
-    /* ── RESUMEN EN FOOTER ── */
+    /* RESUMEN FOOTER */
     .footer-summary {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 8px 16px;
+      border-radius: 12px;
+      padding: 6px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: auto;
       box-shadow: var(--shadow-sm);
-      flex-shrink: 0;
-      max-width: 480px;
       width: 100%;
-      margin-left: auto;
-      margin-right: auto;
     }
 
     .summary-item {
@@ -572,7 +563,7 @@
     }
 
     .summary-title {
-      font-size: 0.65rem;
+      font-size: 0.60rem;
       color: var(--text-muted);
       font-weight: 700;
       text-transform: uppercase;
@@ -580,16 +571,17 @@
     }
 
     .summary-value {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: var(--text);
       font-variant-numeric: tabular-nums;
+      line-height: 1.15;
     }
 
-    /* ── TOAST ── */
+    /* ── TOAST NOTIFICACIONES ── */
     .toast-sync {
       position: fixed;
-      bottom: 60px;
+      bottom: 50px;
       left: 50%;
       transform: translateX(-50%) translateY(100px);
       background: rgba(15, 23, 42, 0.94);
@@ -607,9 +599,39 @@
       opacity: 0;
       pointer-events: none;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 999;
+      z-index: 9999;
     }
     .toast-sync.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* TOAST PRÓXIMAMENTE DESTACADO */
+    .toast-proximamente {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
+      color: #f8fafc;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(56, 189, 248, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 99999;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast-proximamente.show {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
     }
@@ -628,7 +650,7 @@
         --text: #f8fafc;
         --text-muted: #94a3b8;
         --text-dim: #64748b;
-        --shadow-dock: 0 8px 30px rgba(0, 0, 0, 0.5);
+        --shadow-dock: 0 4px 20px rgba(0, 0, 0, 0.5);
       }
       .app-dock {
         background: rgba(17, 24, 39, 0.92);
@@ -656,13 +678,13 @@
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- HEADER SUPERIOR -->
   <header class="header">
     <div class="header-title-box">
       <div class="header-title">
         <span>🔢 CDI Móvil</span>
         <span class="header-badge-live">En Vivo</span>
-        <button type="button" id="btnVersionBadge" class="header-version-btn" title="Versión v270. Toca para recargar y purgar caché">v270 🔄</button>
+        <button type="button" id="btnVersionBadge" class="header-version-btn" title="Versión v271. Toca para recargar y purgar caché">v271 🔄</button>
       </div>
     </div>
     <div class="connection-status">
@@ -734,62 +756,75 @@
     </div>
   </div>
 
-  <!-- DOCK DE APLICACIONES DE CASETA (INTEGRADO DEBAJO DE LOS BOTONES DE CONTEO) -->
-  <nav class="app-dock-wrapper" aria-label="Aplicaciones de Caseta">
-    <div class="dock-header-label">Aplicaciones de Caseta</div>
-    <div class="app-dock">
-      <!-- 1. CHECADOR -->
-      <a href="entrada-movil.html" class="dock-app-btn" id="dockBtnChecador" title="Abrir Checador (Asistencia Facial)">
-        <div class="dock-icon-squircle icon-checador">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
-          </svg>
-        </div>
-        <div class="dock-app-info">
+  <!-- SECCIÓN INFERIOR COMPACTA (DOCK DE 3 APLICACIONES + RESUMEN) -->
+  <div class="bottom-section">
+    <!-- DOCK DE APLICACIONES DE CASETA (3 BOTONES: CHECADOR, RECORRIDOS, BITÁCORAS) -->
+    <nav class="app-dock-wrapper" aria-label="Aplicaciones de Caseta">
+      <div class="dock-header-label">Aplicaciones de Caseta</div>
+      <div class="app-dock">
+        <!-- 1. CHECADOR -->
+        <button type="button" class="dock-app-btn" id="dockBtnChecador" data-app-name="Checador">
+          <div class="dock-icon-squircle icon-checador">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
           <span class="dock-app-title">Checador</span>
-          <span class="dock-app-subtitle">Asistencia Facial</span>
-        </div>
-        <div class="dock-app-arrow">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-      </a>
+          <span class="dock-app-subtitle">Asistencia</span>
+        </button>
 
-      <!-- 2. RECORRIDOS -->
-      <a href="recorrido-movil.html" class="dock-app-btn" id="dockBtnRecorridos" title="Abrir Recorridos (Rondines GPS)">
-        <div class="dock-icon-squircle icon-recorridos">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
-            <line x1="8" y1="2" x2="8" y2="18"/>
-            <line x1="16" y1="6" x2="16" y2="22"/>
-          </svg>
-        </div>
-        <div class="dock-app-info">
+        <!-- 2. RECORRIDOS -->
+        <button type="button" class="dock-app-btn" id="dockBtnRecorridos" data-app-name="Recorridos">
+          <div class="dock-icon-squircle icon-recorridos">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+              <line x1="8" y1="2" x2="8" y2="18"/>
+              <line x1="16" y1="6" x2="16" y2="22"/>
+            </svg>
+          </div>
           <span class="dock-app-title">Recorridos</span>
-          <span class="dock-app-subtitle">Rondines GPS</span>
-        </div>
-        <div class="dock-app-arrow">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-      </a>
-    </div>
-  </nav>
+          <span class="dock-app-subtitle">Rondines</span>
+        </button>
 
-  <!-- RESUMEN FOOTER -->
-  <div class="footer-summary">
-    <div class="summary-item">
-      <span class="summary-title">Total Caseta</span>
-      <span class="summary-value" id="totalCaseta">0</span>
-    </div>
-    <div class="summary-item" style="text-align: right;">
-      <span class="summary-title">Total General</span>
-      <span class="summary-value" id="totalGeneral">0</span>
+        <!-- 3. BITÁCORAS -->
+        <button type="button" class="dock-app-btn" id="dockBtnBitacoras" data-app-name="Bitácoras">
+          <div class="dock-icon-squircle icon-bitacoras">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <span class="dock-app-title">Bitácoras</span>
+          <span class="dock-app-subtitle">Novedades</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- RESUMEN FOOTER -->
+    <div class="footer-summary">
+      <div class="summary-item">
+        <span class="summary-title">Total Caseta</span>
+        <span class="summary-value" id="totalCaseta">0</span>
+      </div>
+      <div class="summary-item" style="text-align: right;">
+        <span class="summary-title">Total General</span>
+        <span class="summary-value" id="totalGeneral">0</span>
+      </div>
     </div>
   </div>
 
-  <!-- TOAST DE CONFIRMACIÓN -->
+  <!-- TOAST DE CONFIRMACIÓN DE SINCRONIZACIÓN -->
   <div class="toast-sync" id="toastSync">
     <span>✓ Sincronizado</span>
+  </div>
+
+  <!-- TOAST DESTACADO PRÓXIMAMENTE -->
+  <div class="toast-proximamente" id="toastProximamente">
+    <span style="font-size: 1.1rem;">🚀</span>
+    <span id="toastProximamenteText">Próximamente</span>
   </div>
 
   <!-- LÓGICA DE CONTROL, SINCRONIZACIÓN Y ACTUALIZACIÓN EN VIVO -->
@@ -915,7 +950,7 @@
         }
       });
 
-      // Feedback táctil hápitco
+      // Feedback táctil háptico
       const triggerHaptic = (ms = 25) => {
         if (navigator.vibrate) {
           try { navigator.vibrate(ms); } catch (e) {}
@@ -929,6 +964,34 @@
           toastSync.classList.remove('show');
         }, 1500);
       };
+
+      // Notificación Próximamente para los botones del Dock
+      let toastProxTimer = null;
+      const showProximamente = (nombreModulo) => {
+        triggerHaptic(35);
+        const toastEl = document.getElementById('toastProximamente');
+        const textEl = document.getElementById('toastProximamenteText');
+        if (toastEl && textEl) {
+          textEl.textContent = `Próximamente: Módulo de ${nombreModulo}`;
+          toastEl.classList.add('show');
+          if (toastProxTimer) clearTimeout(toastProxTimer);
+          toastProxTimer = setTimeout(() => {
+            toastEl.classList.remove('show');
+          }, 2000);
+        }
+      };
+
+      // Escuchadores de eventos para los 3 botones del Dock: Checador, Recorridos, Bitácoras
+      ['dockBtnChecador', 'dockBtnRecorridos', 'dockBtnBitacoras'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const appName = btn.dataset.appName || 'Módulo';
+            showProximamente(appName);
+          });
+        }
+      });
 
       const updateUI = () => {
         ['internos', 'externos', 'prestadores', 'visitas'].forEach(cat => {
@@ -1029,7 +1092,6 @@
           const effectiveDelta = newCount - (counts[cat] || 0);
 
           if (effectiveDelta === 0 && step < 0) {
-            // Ya está en 0, no restar más
             return;
           }
 
@@ -1125,47 +1187,6 @@
       };
 
       // =========================================================================
-      // NAVEGACIÓN DESDE EL DOCK APLICACIONES (CHECADOR Y RECORRIDOS)
-      // =========================================================================
-      const navigateToSubapp = (targetFile) => {
-        triggerHaptic(35);
-
-        const params = new URLSearchParams(window.location.search);
-        if (currentCaseta) {
-          params.set('caseta', currentCaseta);
-        }
-        if (BACKEND_BASE && !params.get('backend') && !params.get('api')) {
-          params.set('backend', BACKEND_BASE);
-        }
-
-        let targetUrl = targetFile;
-        // Si se corre en GitHub Pages y no existe la subapp en la misma ruta, fallback a hosting central
-        if (window.location.hostname.includes('github.io')) {
-          targetUrl = `./${targetFile}`;
-        }
-
-        const qs = params.toString();
-        const finalUrl = qs ? `${targetUrl}?${qs}` : targetUrl;
-        window.location.href = finalUrl;
-      };
-
-      const btnChecador = document.getElementById('dockBtnChecador');
-      if (btnChecador) {
-        btnChecador.addEventListener('click', (e) => {
-          e.preventDefault();
-          navigateToSubapp('entrada-movil.html');
-        });
-      }
-
-      const btnRecorridos = document.getElementById('dockBtnRecorridos');
-      if (btnRecorridos) {
-        btnRecorridos.addEventListener('click', (e) => {
-          e.preventDefault();
-          navigateToSubapp('recorrido-movil.html');
-        });
-      }
-
-      // =========================================================================
       // GESTIÓN DE INFORMACIÓN DEL DISPOSITIVO Y TECNOLOGÍA DE ACTUALIZACIÓN REMOTA
       // =========================================================================
       let deviceUuid = localStorage.getItem('regas_cdi_device_uuid');
@@ -1190,7 +1211,7 @@
         overlay.innerHTML = `
           <div style="font-size: 3.2rem; margin-bottom: 14px; animation: spin 1s linear infinite;">🔄</div>
           <h3 style="margin: 0 0 10px 0; font-size: 1.3rem; font-weight: 800; color: #38bdf8; letter-spacing: -0.01em;">Actualizando CDI Móvil</h3>
-          <p style="margin: 0 0 16px 0; font-size: 0.9rem; color: #94a3b8; max-width: 320px; line-height: 1.5;">El servidor ha enviado una solicitud de actualización obligatoria. Purgando caché local e instalando el nuevo rediseño con Dock...</p>
+          <p style="margin: 0 0 16px 0; font-size: 0.9rem; color: #94a3b8; max-width: 320px; line-height: 1.5;">El servidor ha enviado una solicitud de actualización. Purgando caché local e instalando el nuevo Dock compacto...</p>
           <div style="width: 200px; height: 6px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden; position: relative;">
             <div style="width: 100%; height: 100%; background: #38bdf8; animation: pulseSync 1s infinite alternate;"></div>
           </div>
@@ -1331,7 +1352,7 @@
       const btnVersionBadge = document.getElementById('btnVersionBadge');
       if (btnVersionBadge) {
         btnVersionBadge.addEventListener('click', () => {
-          if (confirm('¿Deseas forzar la actualización de CDI Móvil a la versión más reciente v270? Esto limpiará la memoria caché local y recargará la aplicación con el nuevo Dock.')) {
+          if (confirm('¿Deseas forzar la actualización de CDI Móvil a la versión más reciente v271? Esto limpiará la memoria caché local y recargará la pantalla.')) {
             handleRemoteForceReload(Date.now() + 1000);
           }
         });
