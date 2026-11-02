@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Redireccionando a CIC Mini Apps...</title>
+
+  <!-- PWA / Favicons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Meta refresh fallback -->
+  <meta http-equiv="refresh" content="2; url=https://cic-os-miniapps.web.app">
+
+  <!-- Estilos Glassmorphism CIC OS -->
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 60%, #020617 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent: #3b82f6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 2rem 1.75rem;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .icon-badge {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.25rem;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.35);
+    }
+
+    .icon-badge svg {
+      width: 32px;
+      height: 32px;
+      color: #ffffff;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    p.subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255, 255, 255, 0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      margin: 0 auto 1.25rem;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .app-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .app-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.8rem 1rem;
+      border-radius: 14px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .app-btn:hover, .app-btn:active {
+      background: rgba(59, 130, 246, 0.18);
+      border-color: rgba(59, 130, 246, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .app-btn .icon {
+      font-size: 1.25rem;
+      width: 28px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .footer-note {
+      margin-top: 1.5rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .footer-note a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="icon-badge">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+      </svg>
+    </div>
+
+    <h1>Redirigiendo a Mini Apps</h1>
+    <p class="subtitle" id="status-text">Conectando con la suite móvil de CIC OS...</p>
+
+    <div class="spinner" id="spinner"></div>
+
+    <p style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 0.5rem;">
+      Si no eres redirigido en 2 segundos, pulsa tu destino:
+    </p>
+
+    <div class="app-links">
+      <a href="https://cic-os-miniapps.web.app/" class="app-btn">
+        <span class="icon">📱</span>
+        <span>Suite Completa (Todas las apps)</span>
+      </a>
+      <a href="https://cic-os-miniapps.web.app/checador" class="app-btn">
+        <span class="icon">👤</span>
+        <span>Checador Facial IA</span>
+      </a>
+      <a href="https://cic-os-miniapps.web.app/cdi" class="app-btn">
+        <span class="icon">🔢</span>
+        <span>CDI — Conteo Dinámico</span>
+      </a>
+      <a href="https://cic-os-miniapps.web.app/recorridos" class="app-btn">
+        <span class="icon">📍</span>
+        <span>Recorridos y Rondines GPS</span>
+      </a>
+      <a href="https://cic-os-miniapps.web.app/bitacora" class="app-btn">
+        <span class="icon">📝</span>
+        <span>Bitácora Móvil de Novedades</span>
+      </a>
+    </div>
+
+    <div class="footer-note">
+      Servidor alternativo: <a href="http://localhost:7006">Conectar en Red Local (Puerto 7006)</a>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const CLOUD_BASE = "https://cic-os-miniapps.web.app";
+      const LOCAL_BASE = "http://localhost:7006";
+
+      const params = new URLSearchParams(window.location.search);
+      const appParam = (params.get('app') || '').toLowerCase();
+      const targetMode = params.get('target');
+      const pathname = window.location.pathname.toLowerCase();
+
+      const baseUrl = (targetMode === 'local' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? LOCAL_BASE
+        : CLOUD_BASE;
+
+      let destination = baseUrl;
+      let label = 'la Suite Mini Apps';
+
+      // Detección por parámetro o por ruta previa (ej: /cdi, /Apps/Contador_Colaboradores.html, /checador)
+      if (appParam === 'checador' || pathname.includes('checador')) {
+        destination = baseUrl + '/checador';
+        label = 'Checador Facial IA';
+      } else if (appParam === 'cdi' || pathname.includes('cdi') || pathname.includes('contador_colaboradores')) {
+        destination = baseUrl + '/cdi';
+        label = 'CDI - Conteo Dinámico';
+      } else if (appParam === 'recorridos' || pathname.includes('recorrido')) {
+        destination = baseUrl + '/recorridos';
+        label = 'Recorridos GPS';
+      } else if (appParam === 'bitacora' || pathname.includes('bitacora')) {
+        destination = baseUrl + '/bitacora';
+        label = 'Bitácora Móvil';
+      }
+
+      // Preservar hash si existe
+      if (window.location.hash) {
+        destination += window.location.hash;
+      }
+
+      const statusEl = document.getElementById('status-text');
+      if (statusEl) {
+        statusEl.textContent = 'Redirigiendo a ' + label + '...';
+      }
+
+      // Ejecutar redirección
+      setTimeout(() => {
+        try {
+          window.location.replace(destination);
+        } catch (e) {
+          window.location.href = destination;
+        }
+      }, 350);
+    })();
+  </script>
+</body>
+</html>
