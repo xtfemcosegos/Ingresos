@@ -21,4 +21,4 @@ Esta carpeta contiene el archivo de redirección y portal de acceso directo a la
 ## 🎯 Usos habituales
 
 1. **Acceso directo en Casetas / Tablets:** Puedes abrir este archivo directamente en el navegador de los dispositivos o crear un acceso directo en el escritorio.
-2. **Hosting / Cloudflare Worker / GitHub Pages:** Puedes desplegar esta carpeta en cualquier servicio de hosting estático si requieres un subdominio o enlace personalizado de redirección.
+2. **Hosting / Tailscale Funnel / GitHub Pages:** Puedes desplegar esta carpeta en cualquier servicio de hosting estático si requieres un subdominio o enlace personalizado de redirección conectado al ecosistema Tailscale Funnel (`https://oxosd450mlh.taile94978.ts.net`).
