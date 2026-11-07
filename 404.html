@@ -232,6 +232,15 @@
         label = 'Bitácora Móvil';
       }
 
+      // Preservar parámetros de búsqueda adicionales (ej. caseta, dev)
+      const forwardParams = new URLSearchParams(window.location.search);
+      forwardParams.delete('app');
+      forwardParams.delete('target');
+      const forwardQuery = forwardParams.toString();
+      if (forwardQuery) {
+        destination += (destination.includes('?') ? '&' : '?') + forwardQuery;
+      }
+
       // Preservar hash si existe
       if (window.location.hash) {
         destination += window.location.hash;
