@@ -193,6 +193,10 @@
         <span class="icon">📝</span>
         <span>Bitácora Móvil de Novedades</span>
       </a>
+      <a href="https://cic-os-miniapps.web.app/prestadores" class="app-btn">
+        <span class="icon">🛠️</span>
+        <span>Prestadores de Servicio & Herramientas</span>
+      </a>
     </div>
 
     <div class="footer-note">
@@ -230,6 +234,9 @@
       } else if (appParam === 'bitacora' || pathname.includes('bitacora')) {
         destination = baseUrl + '/bitacora';
         label = 'Bitácora Móvil';
+      } else if (appParam === 'prestadores' || pathname.includes('prestador')) {
+        destination = baseUrl + '/prestadores';
+        label = 'Prestadores & Herramientas';
       }
 
       // Preservar parámetros de búsqueda adicionales (ej. caseta, dev)
